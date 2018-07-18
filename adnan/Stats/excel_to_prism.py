@@ -4,15 +4,6 @@
 import pandas as pd
 import numpy as np
 
-#match raw_data row to table column
-# def sort_df(df_affect,df_table):s
-#     #iterates through table excel sheet
-#     for i in df_table:
-#         for j in df_table[i]:
-#             s = "Specimen_M" + str(j)
-#             df_affect.loc[df_affect.index.to_series().str.contains(s), "group"] = str(i)
-
-
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
