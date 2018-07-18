@@ -11,7 +11,7 @@ def sort_df(df_affect,df_table):
         for j in df_table[i]:
             s = "Specimen_M" + str(j)
             df_affect.loc[df_affect.index.to_series().str.contains(s), "group"] = str(i)
-
+    return df_affect
 if __name__ == "__main__":
     #load data into pandas dataframe
     filename = 'CLP 2.0 2mo RAW.xls'
@@ -28,7 +28,8 @@ if __name__ == "__main__":
     df_table.columns = df_table.columns.map(str)
 
     #sort the RAW data by group
-    sort_df(df_RAW,df_table)
+    df_RAW = sort_df(df_RAW,df_table)
+    df_RAW = df_RAW.drop(['Mean','SD'])
 
     #save data to excel file
     save_folder = 'Rearranged Data/'
