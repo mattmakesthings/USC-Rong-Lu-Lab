@@ -35,20 +35,30 @@ if __name__ == "__main__":
     #load data into pandas dataframe
     filename = 'CLP 2.0 2mo RAW.xls'
     load_folder = 'Rearranged Data/'
-    df_rearranged = pd.read_excel(load_folder + 'Rearranged '+ filename)
+    rearranged_df = pd.read_excel(load_folder + 'Rearranged '+ filename)
 
     #create dataframe for 'all' sheet calculations
-    all_df = df_rearranged[['group','Alive']].copy()
-    all_df = append_percent_all(df_rearranged,all_df)
+    all_df = rearranged_df[['group','Alive']].copy()
+    all_df = append_percent_all(rearranged_df,all_df)
 
     #similarly for subtype calculations
-    subtype_df = df_rearranged[['group','Alive']].copy()
-    subtype_df = append_percent_subtype(df_rearranged,subtype_df)
+    subtype_df = rearranged_df[['group','Alive']].copy()
+    subtype_df = append_percent_subtype(rearranged_df,subtype_df)
 
     #save data to excel file
     save_folder = 'Calculated for Prism/'
-    writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename)
+    writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename, engine='xlsxwriter')
     all_df.to_excel(writer,sheet_name='All')
+    rearranged_df.to_excel(writer,sheet_name='RAW')
     subtype_df.to_excel(writer,sheet_name='GraphPad')
 
+    #format excel sheets
+    workbook = writer.book
+    worksheet_all = writer.sheets['All']
+    worksheet_subtype = writer.sheets['GraphPad']
+
+    wrap_format = workbook.add_format({'text_wrap': True})
+    worksheet_all
+    worksheet_all.set_column('A:Z', 15, wrap_format)
+    worksheet_subtype.set_column('A:BB', 18, wrap_format)
     writer.save()

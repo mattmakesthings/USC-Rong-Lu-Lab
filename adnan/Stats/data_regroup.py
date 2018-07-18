@@ -15,7 +15,8 @@ def sort_df(df_affect,df_table):
 if __name__ == "__main__":
     #load data into pandas dataframe
     filename = 'CLP 2.0 2mo RAW.xls'
-    df_RAW = pd.read_excel('RAW Data/' + filename)
+    load_folder = 'RAW Data/'
+    df_RAW = pd.read_excel(load_folder + filename)
     df_RAW.index = df_RAW.index.map(str)
 
     #add grouping column
@@ -26,7 +27,7 @@ if __name__ == "__main__":
     df_table = pd.read_excel('Table/' + table_file)
     df_table.columns = df_table.columns.map(str)
 
-    #sort the RAW data
+    #sort the RAW data by group
     sort_df(df_RAW,df_table)
 
     #save data to excel file
