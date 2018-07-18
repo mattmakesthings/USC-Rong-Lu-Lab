@@ -4,6 +4,9 @@
 import pandas as pd
 import numpy as np
 
+import pandas.io.formats.excel
+pandas.io.formats.excel.header_style = None
+
 #match raw_data row to table column
 def sort_df(df_affect,df_table):
     #iterates through table excel sheet
@@ -35,6 +38,26 @@ if __name__ == "__main__":
 
     #save data to excel file
     save_folder = 'Rearranged Data/'
-    writer = pd.ExcelWriter(save_folder + 'Rearranged '+ filename)
+    writer = pd.ExcelWriter(save_folder + 'Rearranged '+ filename,engine = 'xlsxwriter')
     df_RAW.to_excel(writer,sheet_name='Sheet1')
+
+    #formatting excel file
+    workbook = writer.book
+    worksheet_RAW = writer.sheets['Sheet1']
+
+    cell_format = workbook.add_format({'align':'right',
+
+                                       'font':'Arial',
+                                       'font_size' : 10})
+
+
+
+    label_width = 40
+    label = 'A:A'
+    worksheet_RAW.set_column(label, label_width, cell_format)
+
+    column_width = 14
+    columns = 'B:BB'
+    worksheet_RAW.set_column(columns, column_width, cell_format)
+
     writer.save()

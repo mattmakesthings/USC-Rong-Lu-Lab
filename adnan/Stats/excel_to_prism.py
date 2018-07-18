@@ -52,7 +52,7 @@ if __name__ == "__main__":
 
     #save data to excel file
     save_folder = 'Calculated for Prism/'
-    #pd.core.cell_format.header_style = None
+
     writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename, engine='xlsxwriter')
 
     all_df.to_excel(writer,sheet_name='All')
@@ -67,18 +67,15 @@ if __name__ == "__main__":
     worksheet_gp_paste = writer.sheets['GraphPad Paste']
 
     cell_format = workbook.add_format({'align':'right',
-                                    #    'text_wrap': True,
                                        'font':'Arial',
                                        'font_size' : 10})
-
-    label_format = workbook.add_format({'font':'Arial','bold': True})
 
     label_width = 40
     label = 'A:A'
     worksheet_all.set_column(label, label_width, cell_format)
     worksheet_subtype.set_column(label, label_width, cell_format)
     worksheet_gp_paste.set_column(label, label_width, cell_format)
-    
+
 
     column_width = 14
     columns = 'B:BB'
