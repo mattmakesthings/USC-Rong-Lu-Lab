@@ -29,6 +29,8 @@ if __name__ == "__main__":
 
     #sort the RAW data by group
     df_RAW = sort_df(df_RAW,df_table)
+
+    # Drop the stats rows in the data
     df_RAW = df_RAW.drop(['Mean','SD'])
 
     #save data to excel file

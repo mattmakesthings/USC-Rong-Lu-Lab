@@ -4,6 +4,9 @@
 import pandas as pd
 import numpy as np
 
+import pandas.io.formats.excel
+pandas.io.formats.excel.header_style = None
+
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
@@ -28,7 +31,6 @@ def create_gp_paste_df(all_df, subtype_df):
     df_dest = all_df[['group']].copy()
     for i in col_names:
         df_dest[i] = all_df["% " + i]
-
         for j in subtypes:
             df_dest[i+j] = subtype_df["% " + i + j]
     return df_dest
@@ -50,20 +52,37 @@ if __name__ == "__main__":
 
     #save data to excel file
     save_folder = 'Calculated for Prism/'
+    #pd.core.cell_format.header_style = None
     writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename, engine='xlsxwriter')
+
     all_df.to_excel(writer,sheet_name='All')
     rearranged_df.to_excel(writer,sheet_name='RAW')
     subtype_df.to_excel(writer,sheet_name='GraphPad')
     gp_paste_df.to_excel(writer,sheet_name='GraphPad Paste')
 
-    #format excel sheets
+    #cell_format excel sheets
     workbook = writer.book
     worksheet_all = writer.sheets['All']
     worksheet_subtype = writer.sheets['GraphPad']
     worksheet_gp_paste = writer.sheets['GraphPad Paste']
 
-    wrap_format = workbook.add_format({'text_wrap': True})
-    worksheet_all.set_column('A:Z', 15, wrap_format)
-    worksheet_subtype.set_column('A:BB', 18, wrap_format)
-    worksheet_gp_paste.set_column('A:BB', 18, wrap_format)
+    cell_format = workbook.add_format({'align':'right',
+                                    #    'text_wrap': True,
+                                       'font':'Arial',
+                                       'font_size' : 10})
+
+    label_format = workbook.add_format({'font':'Arial','bold': True})
+
+    label_width = 40
+    label = 'A:A'
+    worksheet_all.set_column(label, label_width, cell_format)
+    worksheet_subtype.set_column(label, label_width, cell_format)
+    worksheet_gp_paste.set_column(label, label_width, cell_format)
+    
+
+    column_width = 14
+    columns = 'B:BB'
+    worksheet_all.set_column(columns, column_width, cell_format)
+    worksheet_subtype.set_column(columns, column_width, cell_format)
+    worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
