@@ -7,6 +7,11 @@ import numpy as np
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+filename = 'CLP 2.0 2mo RAW.xls'
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+load_folder = 'RAW Data/'
+save_folder = 'Rearranged Data/'
+
 #match raw_data row to table column
 def sort_df(df_affect,df_table):
     #iterates through table excel sheet
@@ -17,8 +22,8 @@ def sort_df(df_affect,df_table):
     return df_affect
 if __name__ == "__main__":
     #load data into pandas dataframe
-    filename = 'CLP 2.0 2mo RAW.xls'
-    load_folder = 'RAW Data/'
+
+
     df_RAW = pd.read_excel(load_folder + filename)
     df_RAW.index = df_RAW.index.map(str)
 
@@ -26,18 +31,19 @@ if __name__ == "__main__":
     df_RAW.insert(loc=0, column="group",value="ungrouped")
 
     #read in table data
-    table_file = 'HSC-CLP 2.0 Table.xlsx'
+
     df_table = pd.read_excel('Table/' + table_file)
     df_table.columns = df_table.columns.map(str)
 
     #sort the RAW data by group
     df_RAW = sort_df(df_RAW,df_table)
+    df_RAW.sort_values(by=['group'],ascending = False,inplace=True)
 
     # Drop the stats rows in the data
     df_RAW = df_RAW.drop(['Mean','SD'])
 
     #save data to excel file
-    save_folder = 'Rearranged Data/'
+
     writer = pd.ExcelWriter(save_folder + 'Rearranged '+ filename,engine = 'xlsxwriter')
     df_RAW.to_excel(writer,sheet_name='Sheet1')
 
@@ -56,7 +62,7 @@ if __name__ == "__main__":
     label = 'A:A'
     worksheet_RAW.set_column(label, label_width, cell_format)
 
-    column_width = 14
+    column_width = 18
     columns = 'B:BB'
     worksheet_RAW.set_column(columns, column_width, cell_format)
 

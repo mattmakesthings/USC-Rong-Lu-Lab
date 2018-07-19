@@ -7,6 +7,10 @@ import numpy as np
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+filename = 'CLP 2.0 2mo RAW.xls'
+load_folder = 'Rearranged Data/'
+save_folder = 'Calculated for Prism/'
+
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
@@ -37,12 +41,12 @@ def create_gp_paste_df(all_df, subtype_df):
 
 if __name__ == "__main__":
     #load data into pandas dataframe
-    filename = 'CLP 2.0 2mo RAW.xls'
-    load_folder = 'Rearranged Data/'
+
     rearranged_df = pd.read_excel(load_folder + 'Rearranged '+ filename)
 
     #create dataframe for 'all' sheet calculations
     all_df = create_all_df(rearranged_df)
+
 
     #similarly for subtype calculations
     subtype_df = create_subtype_df(rearranged_df)
@@ -51,7 +55,6 @@ if __name__ == "__main__":
     gp_paste_df = create_gp_paste_df(all_df,subtype_df)
 
     #save data to excel file
-    save_folder = 'Calculated for Prism/'
 
     writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename, engine='xlsxwriter')
 
