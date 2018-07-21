@@ -3,6 +3,9 @@
 # script to automate the execution of converting raw data
 # to prism friendly copy and paste formatting
 
+# TODO: convert this script to module form for maintainability
+# reference - https://stackoverflow.com/questions/7974849/how-can-i-make-one-python-file-run-another
+
 import data_regroup
 import append_percent
 import subtype_sheets
