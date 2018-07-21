@@ -3,6 +3,7 @@
 #script to group specimen data
 import pandas as pd
 import numpy as np
+import os
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
@@ -10,6 +11,9 @@ pandas.io.formats.excel.header_style = None
 filename = 'CLP 2.0 2mo RAW.xls'
 table_file = 'HSC-CLP 2.0 Table.xlsx'
 load_folder = 'RAW Data/'
+
+if not os.path.exists('Rearranged Data/'):
+    os.makedirs('Rearranged Data/')
 save_folder = 'Rearranged Data/'
 
 #match raw_data row to table column

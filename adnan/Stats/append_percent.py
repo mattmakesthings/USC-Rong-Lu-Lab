@@ -3,12 +3,16 @@
 #script to group specimen data
 import pandas as pd
 import numpy as np
+import os
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 filename = 'CLP 2.0 2mo RAW.xls'
 load_folder = 'Rearranged Data/'
+
+if not os.path.exists('Calculated for Prism/'):
+    os.makedirs('Calculated for Prism/')
 save_folder = 'Calculated for Prism/'
 
 #column names from excel sheet

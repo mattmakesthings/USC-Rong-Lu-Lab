@@ -3,13 +3,18 @@
 #script to group specimen data
 import pandas as pd
 import numpy as np
+import os
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 filename = 'CLP 2.0 2mo RAW.xls'
 load_folder = 'Calculated for Prism/'
-save_folder = 'Calculated for Prism/'
+
+if not os.path.exists('Transposed Calculated for Prism/'):
+    os.makedirs('Transposed Calculated for Prism/')
+
+save_folder = 'Transposed Calculated for Prism/'
 
 
 subgroup_size = 6
@@ -57,7 +62,7 @@ if __name__ == "__main__":
     xls_file = pd.ExcelFile(load_folder + 'Graph Pad '+ filename)
     gp_paste_df = xls_file.parse('GraphPad Paste')
 
-    writer = pd.ExcelWriter(save_folder + 'Graph Pad Transposed'+ filename, engine='xlsxwriter')
+    writer = pd.ExcelWriter(save_folder + 'Graph Pad Transposed '+ filename, engine='xlsxwriter')
 
     for name in col_names:
         gran_df = transform(gp_paste_df,name)
