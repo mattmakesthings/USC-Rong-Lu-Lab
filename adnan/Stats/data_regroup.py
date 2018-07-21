@@ -1,16 +1,22 @@
 #! /usr/bin/python2.7
 
-#script to group specimen data
+#script to group specimen data given a table file
 import pandas as pd
 import numpy as np
 import os
+import sys
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename = 'CLP 2.0 2mo RAW.xls'
+# test file 'CLP 2.0 2mo RAW.xls'
+filename = sys.argv[1]
+
 table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_folder = 'Table/'
+
 load_folder = 'RAW Data/'
+
 
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
@@ -36,7 +42,7 @@ if __name__ == "__main__":
 
     #read in table data
 
-    df_table = pd.read_excel('Table/' + table_file)
+    df_table = pd.read_excel(table_folder + table_file)
     df_table.columns = df_table.columns.map(str)
 
     #sort the RAW data by group

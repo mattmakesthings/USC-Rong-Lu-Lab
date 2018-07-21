@@ -4,11 +4,12 @@
 import pandas as pd
 import numpy as np
 import os
+import sys
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename = 'CLP 2.0 2mo RAW.xls'
+filename = sys.argv[1]
 load_folder = 'Calculated for Prism/'
 
 if not os.path.exists('Transposed Calculated for Prism/'):

@@ -6,8 +6,9 @@
 import data_regroup
 import append_percent
 import subtype_sheets
+import sys
 
-filename = 'CLP 2.0 2mo RAW.xls'
+filename = sys.argv[1]
 
 with open("data_regroup.py") as f:
     code = compile(f.read(), "data_regroup.py", 'exec')
