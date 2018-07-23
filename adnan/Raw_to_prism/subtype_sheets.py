@@ -21,7 +21,6 @@ else:
         print "filename" +  name_error_str
         filename = 'IL10KO 1.0 2mo RAW.xls'
 
-
 if len(sys.argv) > 2:
     table_file = sys.argv[2]
 else:
@@ -30,7 +29,6 @@ else:
     except NameError:
         print "table_file" + name_error_str
         table_file = 'IL10KO 1.0 Table 01.xlsx'
-
 
 try:
     table_folder
@@ -50,7 +48,7 @@ if not os.path.exists('Transposed Calculated for Prism/'):
 save_folder = 'Transposed Calculated for Prism/'
 
 #column names from excel sheet
-col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
+cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
 
 def col_to_dict(df):
@@ -108,7 +106,7 @@ if __name__ == "__main__":
 
     writer = pd.ExcelWriter(save_folder + 'Graph Pad Transposed '+ filename, engine='xlsxwriter')
 
-    for name in col_names:
+    for name in cell_type:
         gran_df = transform(gp_paste_df,name)
         gran_df.to_excel(writer,sheet_name=name)
 
@@ -117,7 +115,7 @@ if __name__ == "__main__":
     cell_format = workbook.add_format({'align':'right',
                                        'font':'Arial',
                                        'font_size' : 10})
-    for name in col_names:
+    for name in cell_type:
         worksheet_gp_paste = writer.sheets[name]
 
         label_width = 40
@@ -128,4 +126,3 @@ if __name__ == "__main__":
         columns = 'B:BB'
         worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
-
