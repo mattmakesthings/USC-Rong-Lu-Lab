@@ -6,18 +6,18 @@
 import os
 
 #iterator over all files in a directory
-data_folder = 'RAW Data Test'
-for filename in os.listdir(os.getcwd() + data_folder):
+data_folder = 'RAW Data/'
 
+#table file
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_folder = 'Table/'
+
+#max length of subgroups
+chimerism = 10
+
+for filename in os.listdir(os.getcwd() + '/' + data_folder):
     print filename
-
-    #table file
-    table_file = 'IL10KO 1.0 Table 01.xlsx'
-    table_folder = 'Table/'
-
-    #variable
-    subgroup_size = 10
-
+    
     with open("data_regroup.py") as f:
         code = compile(f.read(), "data_regroup.py", 'exec')
         exec(code)

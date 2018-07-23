@@ -38,17 +38,15 @@ except NameError:
     table_folder = 'Table/'
 
 try:
-    subgroup_size
+    chimerism
 except NameError:
-    print "subgroup_size" + name_error_str
-    subgroup_size = 10
+    print "chimerism" + name_error_str
+    chimerism = 10
 
 load_folder = 'Calculated for Prism/'
 if not os.path.exists('Transposed Calculated for Prism/'):
     os.makedirs('Transposed Calculated for Prism/')
 save_folder = 'Transposed Calculated for Prism/'
-
-subgroup_size = 20
 
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
@@ -75,10 +73,10 @@ def transform(src_df,sheet_name):
     cp_df = pd.DataFrame(columns=dest_df.columns)
     empty_row = pd.Series(name='')
 
+    #create dict to count occurences of subgroups
     df_table = pd.read_excel(table_folder + table_file)
     subgroups = col_to_dict(df_table)
     subgroups['ungrouped'] = 0
-    #subgroups = {'WT HSC':0, 'WT CLP':0, 'KO HSC':0, 'KO CLP':0, 'ungrouped':0}
 
     #count difference between size limit and actual size
     for row in dest_df.itertuples():
@@ -88,11 +86,14 @@ def transform(src_df,sheet_name):
     for k,v in subgroups.items():
         cp_df = cp_df.append(dest_df[dest_df['group']==k],ignore_index = True)
 
-        if subgroup_size - subgroups[k] < 0:
-            print ("ERROR - subgroup overflow: " + k + " has too many values")
-            quit()
+        if chimerism - v < 0:
+            if k == 'ungrouped':
+                print ("Warning: ungrouped has more values than chimerism ")
+            else:
+                print ("ERROR - chimerism overflow: " + k + " has too many values")
+                quit()
 
-        for i in range(subgroup_size - subgroups[k]):
+        for i in range(chimerism - subgroups[k]):
             cp_df = cp_df.append(empty_row)
 
     #transform dataframe

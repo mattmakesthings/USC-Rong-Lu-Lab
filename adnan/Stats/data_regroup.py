@@ -37,7 +37,12 @@ except NameError:
     print "table_folder" +  name_error_str
     table_folder = 'Table/'
 
-data_folder = 'RAW Data Test/'
+try:
+    data_folder
+except NameError:
+    print "data_folder" + name_error_str
+    data_folder = 'RAW Data Test/'
+
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
 save_folder = 'Rearranged Data/'
@@ -48,7 +53,15 @@ def group_df(df_affect,df_table):
     for i in df_table:
         for j in df_table[i]:
             s = "M" + str(j)
-            df_affect.loc[df_affect.index.to_series().str.contains(s), "group"] = str(i)
+            result = df_affect.index.to_series().str.contains(s)
+            #throw errors if duplicate table entries
+            #are detected in data
+            if sum(result) > 1:
+                print '\n'.join([k for k,v in result.iteritems() if v == True ])
+                print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
+                # quit()
+            else:
+                df_affect.loc[df_affect.index.to_series().str.contains(s), "group"] = str(i)
     return df_affect
 
 if __name__ == "__main__":
@@ -62,7 +75,6 @@ if __name__ == "__main__":
     df_RAW.insert(loc=0, column="group",value="ungrouped")
 
     #read in table data
-
     df_table = pd.read_excel(table_folder + table_file)
     df_table.columns = df_table.columns.map(str)
 
