@@ -9,21 +9,60 @@ import sys
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename = sys.argv[1]
+name_error_str = " not previously defined, continuing with harcoded value"
+
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+else:
+    try:
+        filename
+    except NameError:
+        print "filename" +  name_error_str
+        filename = 'IL10KO 1.0 2mo RAW.xls'
+
+
+if len(sys.argv) > 2:
+    table_file = sys.argv[2]
+else:
+    try:
+        table_file
+    except NameError:
+        print "table_file" + name_error_str
+        table_file = 'IL10KO 1.0 Table 01.xlsx'
+
+
+try:
+    table_folder
+except NameError:
+    print "table_folder" + name_error_str
+    table_folder = 'Table/'
+
+try:
+    subgroup_size
+except NameError:
+    print "subgroup_size" + name_error_str
+    subgroup_size = 10
 
 load_folder = 'Calculated for Prism/'
 if not os.path.exists('Transposed Calculated for Prism/'):
     os.makedirs('Transposed Calculated for Prism/')
 save_folder = 'Transposed Calculated for Prism/'
 
-subgroup_size = 6
+
 
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
+
+def col_to_dict(df):
+    d = {}
+    for col in df:
+        d[col] = 0
+    return d
+
 def transform(src_df,sheet_name):
     #sort rows by group
-    src_df.sort_values(by=['group'],ascending = False,inplace=True)
+    #src_df.sort_values(by=['group'],ascending = False,inplace=True)
     dest_df = src_df[['group']].copy()
 
     #separate cell group into own dataframe
@@ -36,7 +75,11 @@ def transform(src_df,sheet_name):
     cp_df = pd.DataFrame(columns=dest_df.columns)
     empty_row = pd.Series(name='')
 
-    subgroups = {'WT HSC':0, 'WT CLP':0, 'KO HSC':0, 'KO CLP':0}
+    df_table = pd.read_excel(table_folder + table_file)
+    subgroups = col_to_dict(df_table)
+    subgroups['ungrouped'] = 0
+    #subgroups = {'WT HSC':0, 'WT CLP':0, 'KO HSC':0, 'KO CLP':0, 'ungrouped':0}
+
     #count difference between size limit and actual size
     for row in dest_df.itertuples():
         subgroups[row.group]+=1

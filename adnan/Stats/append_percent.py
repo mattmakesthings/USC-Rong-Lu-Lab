@@ -9,7 +9,16 @@ import sys
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename = sys.argv[1]
+name_error_str = " not previously defined, continuing with harcoded value"
+
+if len(sys.argv) > 1:
+    filename = sys.argv[1]
+else:
+    try:
+        filename
+    except NameError:
+        print "filename" +  name_error_str
+        filename = 'IL10KO 1.0 2mo RAW.xls'
 
 load_folder = 'Rearranged Data/'
 if not os.path.exists('Calculated for Prism/'):
