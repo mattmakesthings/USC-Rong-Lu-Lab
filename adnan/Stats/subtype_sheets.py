@@ -10,13 +10,11 @@ import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 filename = sys.argv[1]
-load_folder = 'Calculated for Prism/'
 
+load_folder = 'Calculated for Prism/'
 if not os.path.exists('Transposed Calculated for Prism/'):
     os.makedirs('Transposed Calculated for Prism/')
-
 save_folder = 'Transposed Calculated for Prism/'
-
 
 subgroup_size = 6
 

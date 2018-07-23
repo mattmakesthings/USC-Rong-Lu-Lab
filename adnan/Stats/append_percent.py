@@ -10,8 +10,8 @@ import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 filename = sys.argv[1]
-load_folder = 'Rearranged Data/'
 
+load_folder = 'Rearranged Data/'
 if not os.path.exists('Calculated for Prism/'):
     os.makedirs('Calculated for Prism/')
 save_folder = 'Calculated for Prism/'
