@@ -3,6 +3,9 @@ copy and paste in to Prism
 
 ## Details:
 
+* pipeline.py  
+automates the execution of the three other scripts
+
 * data_regroup.py  
 produces an excel file in the Rearranged Data folder with an added group column.  
 This group column is created with a specified table file
@@ -10,7 +13,7 @@ This group column is created with a specified table file
 * append_percent.py  
 produces an excel file with percentages of each cell type relative to all cells and #will add#
 
-* subtype_sheets.py
+* subtype_sheets.py  
 separates the data for each cell type into separate excel sheets
 
 
