@@ -18,4 +18,4 @@ execution if they hadn't already existed:
 - Calculated for Prism
 - Transposed Calculated for Prism
 
-the last folder will contain the data in the format that's acceptable for prism.
+the last folder will contain the data in the format that's prism friendly.
