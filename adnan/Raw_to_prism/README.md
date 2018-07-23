@@ -2,10 +2,10 @@ this set of scripts takes data in the format of the files in the `'RAW Data/' `d
 copy and paste in to Prism
 
 ## To Run:
-filename.xls is the filename of the RAW Data you'd like to convert.
-simply run the script, pipeline.py in a terminal like so
+Place the raw data you'd like to run in a folder named 'RAW Data'
+otherwise rename the data_folder variable in pipeline.py
 
-`python pipeline.py filename.xls`
+Then run the pipeline.py script
 
 ## Notes:
 **To group the data the script relies on a Table file in the Table folder.**
