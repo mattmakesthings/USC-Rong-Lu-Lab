@@ -10,6 +10,11 @@ import re
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+filename_ = 'IL10KO 1.0 2mo RAW.xls'
+table_file_ = 'IL10KO 1.0 Table 01.xlsx'
+table_folder_ = 'Table/'
+data_folder_ = 'RAW Data Test/'
+
 #should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
 
@@ -20,7 +25,7 @@ else:
         filename
     except NameError:
         print "filename" +  name_error_str
-        filename = 'IL10KO 1.0 2mo RAW.xls'
+        filename = filename_
 
 
 if len(sys.argv) > 2:
@@ -30,19 +35,19 @@ else:
         table_file
     except NameError:
         print "table_file" +  name_error_str
-        table_file = 'IL10KO 1.0 Table 01.xlsx'
+        table_file = table_file_
 
 try:
     table_folder
 except NameError:
     print "table_folder" +  name_error_str
-    table_folder = 'Table/'
+    table_folder = table_folder_
 
 try:
     data_folder
 except NameError:
     print "data_folder" + name_error_str
-    data_folder = 'RAW Data Test/'
+    data_folder = data_folder_
 
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')

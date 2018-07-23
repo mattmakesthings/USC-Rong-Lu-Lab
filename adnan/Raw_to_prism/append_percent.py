@@ -9,6 +9,9 @@ import sys
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+filename_ = 'IL10KO 1.0 2mo RAW.xls'
+
+
 #should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
 
@@ -19,7 +22,7 @@ else:
         filename
     except NameError:
         print "filename" +  name_error_str
-        filename = 'IL10KO 1.0 2mo RAW.xls'
+        filename = filename_
 
 load_folder = 'Rearranged Data/'
 if not os.path.exists('Calculated for Prism/'):
@@ -100,4 +103,3 @@ if __name__ == "__main__":
     worksheet_subtype.set_column(columns, column_width, cell_format)
     worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
-
