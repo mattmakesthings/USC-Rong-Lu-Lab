@@ -13,7 +13,9 @@ pandas.io.formats.excel.header_style = None
 filename_ = 'IL10KO 1.0 2mo RAW.xls'
 table_file_ = 'IL10KO 1.0 Table 01.xlsx'
 table_folder_ = 'Table/'
+
 data_folder_ = 'RAW Data Test/'
+save_folder = 'Rearranged Data/'
 
 #should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
@@ -51,7 +53,7 @@ except NameError:
 
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
-save_folder = 'Rearranged Data/'
+
 
 #match raw_data row to table column
 def group_df(df_affect,df_table):

@@ -10,7 +10,8 @@ import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 filename_ = 'IL10KO 1.0 2mo RAW.xls'
-
+load_folder = 'Rearranged Data/'
+save_folder = 'Calculated for Prism/'
 
 #should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
@@ -24,10 +25,10 @@ else:
         print "filename" +  name_error_str
         filename = filename_
 
-load_folder = 'Rearranged Data/'
+
 if not os.path.exists('Calculated for Prism/'):
     os.makedirs('Calculated for Prism/')
-save_folder = 'Calculated for Prism/'
+
 
 #column names from excel sheet
 cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]

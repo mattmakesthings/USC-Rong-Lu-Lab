@@ -12,6 +12,10 @@ pandas.io.formats.excel.header_style = None
 filename_ = 'IL10KO 1.0 2mo RAW.xls'
 table_file_ = 'IL10KO 1.0 Table 01.xlsx'
 table_folder_ = 'Table/'
+
+load_folder = 'Calculated for Prism/'
+save_folder = 'Transposed Calculated for Prism/'
+
 chimerism_ = 10
 
 #should only be seen if running script individually, without the pipeline.py script
@@ -47,10 +51,9 @@ except NameError:
     print "chimerism" + name_error_str
     chimerism = chimerism_
 
-load_folder = 'Calculated for Prism/'
+
 if not os.path.exists('Transposed Calculated for Prism/'):
     os.makedirs('Transposed Calculated for Prism/')
-save_folder = 'Transposed Calculated for Prism/'
 
 #column names from excel sheet
 cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
