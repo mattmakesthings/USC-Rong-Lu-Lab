@@ -31,7 +31,6 @@ subtypes = [" (BLY)"," (F1)"," (B6)"]
 def create_all_df(df_src):
     df_dest = df_src[['group','Alive']].copy()
     for i in col_names:
-        #df_dest[i] = df_src.iloc[:,df_src.columns.str.contains(i)].sum(1)
         df_dest[i] = df_src[i]
         df_dest["% " + i] = (df_src[i] * 100.0)/ df_src["Alive"]
     return df_dest

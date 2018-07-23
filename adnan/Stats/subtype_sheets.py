@@ -48,7 +48,7 @@ if not os.path.exists('Transposed Calculated for Prism/'):
     os.makedirs('Transposed Calculated for Prism/')
 save_folder = 'Transposed Calculated for Prism/'
 
-
+subgroup_size = 20
 
 #column names from excel sheet
 col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]

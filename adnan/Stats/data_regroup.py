@@ -37,7 +37,7 @@ except NameError:
     print "table_folder" +  name_error_str
     table_folder = 'Table/'
 
-load_folder = 'RAW Data/'
+data_folder = 'RAW Data Test/'
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
 save_folder = 'Rearranged Data/'
@@ -55,7 +55,7 @@ if __name__ == "__main__":
     #load data into pandas dataframe
 
 
-    df_RAW = pd.read_excel(load_folder + filename)
+    df_RAW = pd.read_excel(data_folder + filename)
     df_RAW.index = df_RAW.index.map(str)
 
     #add grouping column
