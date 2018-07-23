@@ -14,7 +14,7 @@ filename = sys.argv[1]
 
 table_file = 'HSC-CLP 2.0 Table.xlsx'
 table_folder = 'Table/'
-load_folder = 'RAW Data/'
+#load_folder = 'RAW Data/'
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
 save_folder = 'Rearranged Data/'
