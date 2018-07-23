@@ -9,6 +9,7 @@ import sys
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+#should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
 
 if len(sys.argv) > 1:
@@ -127,3 +128,4 @@ if __name__ == "__main__":
         columns = 'B:BB'
         worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
+

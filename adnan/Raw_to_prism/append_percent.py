@@ -9,6 +9,7 @@ import sys
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+#should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
 
 if len(sys.argv) > 1:
@@ -26,18 +27,18 @@ if not os.path.exists('Calculated for Prism/'):
 save_folder = 'Calculated for Prism/'
 
 #column names from excel sheet
-col_names = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
+cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
 subtypes = [" (BLY)"," (F1)"," (B6)"]
 def create_all_df(df_src):
     df_dest = df_src[['group','Alive']].copy()
-    for i in col_names:
+    for i in cell_type:
         df_dest[i] = df_src[i]
         df_dest["% " + i] = (df_src[i] * 100.0)/ df_src["Alive"]
     return df_dest
 
 def create_subtype_df(df_src):
     df_dest = df_src[['group','Alive']].copy()
-    for i in col_names:
+    for i in cell_type:
         df_dest[i] = df_src[i]
         for j in subtypes:
             df_dest[i + j] =  df_src[i+j]
@@ -46,7 +47,7 @@ def create_subtype_df(df_src):
 
 def create_gp_paste_df(all_df, subtype_df):
     df_dest = all_df[['group']].copy()
-    for i in col_names:
+    for i in cell_type:
         df_dest[i] = all_df["% " + i]
         for j in subtypes:
             df_dest[i+j] = subtype_df["% " + i + j]
@@ -99,3 +100,4 @@ if __name__ == "__main__":
     worksheet_subtype.set_column(columns, column_width, cell_format)
     worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
+

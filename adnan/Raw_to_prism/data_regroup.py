@@ -10,6 +10,7 @@ import re
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+#should only be seen if running script individually, without the pipeline.py script
 name_error_str = " not previously defined, continuing with harcoded value"
 
 if len(sys.argv) > 1:

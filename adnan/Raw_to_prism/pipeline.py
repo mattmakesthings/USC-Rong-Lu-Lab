@@ -17,7 +17,7 @@ chimerism = 10
 
 for filename in os.listdir(os.getcwd() + '/' + data_folder):
     print filename
-    
+
     with open("data_regroup.py") as f:
         code = compile(f.read(), "data_regroup.py", 'exec')
         exec(code)
