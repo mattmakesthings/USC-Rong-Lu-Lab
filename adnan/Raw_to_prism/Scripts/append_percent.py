@@ -6,28 +6,20 @@ import numpy as np
 import os
 import sys
 
+from version import get_version
+from data_regroup import create_save_folder, create_path, load_data, prepend_folder
+version = get_version()
+
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename_ = 'IL10KO 1.0 2mo RAW.xls'
+data_file = 'CLP 2.0 2mo RAW.xls'
+
 load_folder = 'Rearranged Data/'
 save_folder = 'Calculated for Prism/'
 
-#should only be seen if running script individually, without the pipeline.py script
-name_error_str = " not previously defined, continuing with harcoded value"
-
-if len(sys.argv) > 1:
-    filename = sys.argv[1]
-else:
-    try:
-        filename
-    except NameError:
-        print "filename" +  name_error_str
-        filename = filename_
-
-
-if not os.path.exists('Calculated for Prism/'):
-    os.makedirs('Calculated for Prism/')
+load_folder = prepend_folder(load_folder)
+save_folder = prepend_folder(save_folder)
 
 
 #column names from excel sheet
@@ -57,24 +49,14 @@ def create_gp_paste_df(all_df, subtype_df):
             df_dest[i+j] = subtype_df["% " + i + j]
     return df_dest
 
-if __name__ == "__main__":
-    #load data into pandas dataframe
+def create_dfs(df):
+    all_df = create_all_df(df)
+    st_df = create_subtype_df(df)
+    return all_df , st_df ,create_gp_paste_df(all_df,st_df)
 
-    rearranged_df = pd.read_excel(load_folder + 'Rearranged '+ filename)
-
-    #create dataframe for 'all' sheet calculations
-    all_df = create_all_df(rearranged_df)
-
-
-    #similarly for subtype calculations
-    subtype_df = create_subtype_df(rearranged_df)
-
-    #graphpad_paste sheet
-    gp_paste_df = create_gp_paste_df(all_df,subtype_df)
-
+def save_to_excel(path,all_df,rearranged_df,subtype_df,gp_paste_df):
     #save data to excel file
-
-    writer = pd.ExcelWriter(save_folder + 'Graph Pad '+ filename, engine='xlsxwriter')
+    writer = pd.ExcelWriter(path, engine='xlsxwriter')
 
     all_df.to_excel(writer,sheet_name='All')
     rearranged_df.to_excel(writer,sheet_name='RAW')
@@ -97,10 +79,18 @@ if __name__ == "__main__":
     worksheet_subtype.set_column(label, label_width, cell_format)
     worksheet_gp_paste.set_column(label, label_width, cell_format)
 
-
     column_width = 14
     columns = 'B:BB'
     worksheet_all.set_column(columns, column_width, cell_format)
     worksheet_subtype.set_column(columns, column_width, cell_format)
     worksheet_gp_paste.set_column(columns, column_width, cell_format)
     writer.save()
+
+if __name__ == "__main__":
+    load_path = create_path(load_folder,data_file,' Rearranged ')
+    rearranged_df = load_data(load_path)
+    all_df , subtype_df , gp_paste_df = create_dfs(rearranged_df)
+
+    create_save_folder(save_folder)
+    path = create_path(save_folder,data_file,' GraphPad ')
+    save_to_excel(path,all_df,rearranged_df,subtype_df,gp_paste_df)
