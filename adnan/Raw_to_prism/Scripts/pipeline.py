@@ -52,7 +52,7 @@ if __name__ == "__main__":
         df_RAW = dr.get_grouped_data(df_RAW,df_table)
 
         #save data to excel file
-
+        dr.create_save_folder(save_folder_dr)
         save_path = dr.create_path(save_folder_dr,data_file,' Rearranged ')
         dr.save_to_excel(save_path,df_RAW)
 
@@ -60,6 +60,7 @@ if __name__ == "__main__":
         rearranged_df = ap.load_data(save_path)
         all_df , subtype_df , gp_paste_df = ap.create_dfs(rearranged_df)
 
+        dr.create_save_folder(save_folder_ap)
         save_path = ap.create_path(save_folder_ap,data_file,' GraphPad ')
         ap.save_to_excel(save_path,all_df,rearranged_df,subtype_df,gp_paste_df)
 
@@ -68,5 +69,5 @@ if __name__ == "__main__":
         gp_paste_df = ss.load_excel(save_path)
         save_path = dr.create_path(save_folder_ss,data_file,' Graph Pad Transposed ')
         writer = ss.create_cell_sheets(gp_paste_df,save_path)
+        dr.create_save_folder(save_folder_ss)
         ss.save_to_excel(writer)
-
