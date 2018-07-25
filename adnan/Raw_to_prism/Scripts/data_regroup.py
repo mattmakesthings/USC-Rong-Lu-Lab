@@ -10,9 +10,9 @@ import re
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'CLP 2.0 2mo RAW.xls'
-data_folder = 'RAW Data/'
-table_file = 'HSC-CLP 2.0 Table.xlsx'
+data_file = 'IL10KO 1.0 4mo RAW.xls'
+data_folder = 'Data/IL10KO/'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table/'
 
 save_folder = 'Rearranged Data/'
@@ -31,7 +31,9 @@ def load_data(path):
     return pd.read_excel(path)
 
 def load_table(path):
-    return pd.read_excel(table_folder + table_file)
+    df_table = load_data(path)
+    df_table = df_table.apply(pd.to_numeric)
+    return df_table
 
 def add_group_col(df):
     df.insert(loc=0, column="group",value="ungrouped")
@@ -72,18 +74,21 @@ def create_sort_list(df_table):
     order.append('ungrouped')
     return order
 
-def string_match(df,str):
-    return df.index.to_series().str.contains(str)
+def string_match(df,s):
+    return df.index.to_series().str.contains(s)
 
 #match raw_data row to table column
 def group_df(df_affect,df_table):
     #iterates through table excel sheet
     for i in df_table:
         for j in df_table[i]:
-            s = "M" + str(j)
+            j = str(j.astype(np.int64))
+            s = "M" + j
             result = string_match(df_affect,s)
             #throw errors if duplicate table entries
             #are detected in data
+            if sum(result) == 0:
+                print type(j)
             if sum(result) > 1:
                 print '\n'.join([k for k,v in result.iteritems() if v == True ])
                 print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
@@ -116,6 +121,7 @@ def save_to_excel(path,df_RAW):
 
 def get_grouped_data(df_RAW,df_table):
     df_RAW = drop_stats_rows(df_RAW)
+    df_RAW = add_group_col(df_RAW)
     df_RAW = group_df(df_RAW,df_table)
     order = create_sort_list(df_table)
     df_RAW = add_group_mapping(df_RAW,order)
@@ -125,7 +131,7 @@ def get_grouped_data(df_RAW,df_table):
     return df_RAW
 
 #adds version and identifier to file name
-def create_path(folder,data_file,identifier):
+def create_path(folder,data_file,identifier = ''):
     from version import get_version
     version = get_version()
 
@@ -138,7 +144,8 @@ if __name__ == "__main__":
     df_RAW = load_data(data_folder + data_file)
     # load table data into dataframe
     df_table = load_table(table_folder + table_file)
-
+    df_table = df_table.apply(pd.to_numeric)
+    print df_table
     # group data
     df_RAW = get_grouped_data(df_RAW,df_table)
 

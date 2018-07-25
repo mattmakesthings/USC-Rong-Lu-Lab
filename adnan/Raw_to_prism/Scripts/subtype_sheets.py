@@ -7,7 +7,7 @@ import os
 import sys
 
 from collections import OrderedDict
-from data_regroup import create_save_folder, create_path, prepend_folder
+from data_regroup import create_save_folder, create_path, prepend_folder,load_table
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
@@ -26,11 +26,9 @@ table_folder = prepend_folder(table_folder)
 
 load_path = create_path(load_folder,data_file,' GraphPad ')
 save_path = create_path(save_folder,data_file,' GraphPad Transposed ')
+table_path = table_folder + table_file
 
 chimerism = 10
-
-#column names from excel sheet
-subtypes = [" (BLY)"," (F1)"," (B6)"]
 
 def col_to_dict(df):
     d = OrderedDict()
@@ -38,9 +36,12 @@ def col_to_dict(df):
         d[col] = 0
     return d
 
-def transform(src_df,sheet_name):
+def get_cell_type():
+    cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
+    return cell_type
+
+def transform(src_df,sheet_name,df_table):
     #sort rows by group
-    #src_df.sort_values(by=['group'],ascending = False,inplace=True)
     dest_df = src_df[['group']].copy()
 
     #separate cell group into own dataframe
@@ -54,7 +55,6 @@ def transform(src_df,sheet_name):
     empty_row = pd.Series(name='')
 
     #create dict to count occurences of subgroups
-    df_table = pd.read_excel(table_folder + table_file)
     subgroups = col_to_dict(df_table)
     subgroups['ungrouped'] = 0
 
@@ -84,16 +84,18 @@ def load_excel(path):
     xls_file = pd.ExcelFile(path)
     return xls_file.parse('GraphPad Paste')
 
-def get_cell_type():
-    cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]
-    return cell_type
+def subgroups_from_table(df_table):
+    subgroups = col_to_dict(df_table)
+    subgroups['ungrouped'] = 0
+    return subgroups
 
-def create_cell_sheets(gp_paste_df,path):
+def create_cell_sheets(gp_paste_df,df_table,path):
     writer = pd.ExcelWriter(path, engine='xlsxwriter')
+    subgroups = subgroups_from_table(df_table)
 
     cell_type = get_cell_type()
     for name in cell_type:
-        gran_df = transform(gp_paste_df,name)
+        gran_df = transform(gp_paste_df,name,df_table)
         gran_df.to_excel(writer,sheet_name=name)
     return writer
 
@@ -121,6 +123,7 @@ def save_to_excel(writer):
 if __name__ == "__main__":
     #load data into pandas dataframe
     gp_paste_df = load_excel(load_path)
-    writer = create_cell_sheets(gp_paste_df,save_path)
+    df_table = load_table(table_path)
+    writer = create_cell_sheets(gp_paste_df,df_table,save_path)
     create_save_folder(save_folder)
     save_to_excel(writer)
