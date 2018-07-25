@@ -10,50 +10,60 @@ import re
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-filename_ = 'IL10KO 1.0 2mo RAW.xls'
-table_file_ = 'IL10KO 1.0 Table 01.xlsx'
-table_folder_ = 'Table/'
+data_file = 'CLP 2.0 2mo RAW.xls'
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_folder = 'Table/'
 
-data_folder_ = 'RAW Data Test/'
+data_folder = 'RAW Data/'
 save_folder = 'Rearranged Data/'
-
-#should only be seen if running script individually, without the pipeline.py script
-name_error_str = " not previously defined, continuing with harcoded value"
-
-if len(sys.argv) > 1:
-    filename = sys.argv[1]
-else:
-    try:
-        filename
-    except NameError:
-        print "filename" +  name_error_str
-        filename = filename_
-
-
-if len(sys.argv) > 2:
-    table_file = sys.argv[2]
-else:
-    try:
-        table_file
-    except NameError:
-        print "table_file" +  name_error_str
-        table_file = table_file_
-
-try:
-    table_folder
-except NameError:
-    print "table_folder" +  name_error_str
-    table_folder = table_folder_
-
-try:
-    data_folder
-except NameError:
-    print "data_folder" + name_error_str
-    data_folder = data_folder_
 
 if not os.path.exists('Rearranged Data/'):
     os.makedirs('Rearranged Data/')
 
+def load_RAW(path):
+    return pd.read_excel(path)
+
+def load_table(path):
+    return pd.read_excel(table_folder + table_file)
+
+def add_group_col(df):
+    df.insert(loc=0, column="group",value="ungrouped")
+    return df
+
+def add_group_mapping(df,order):
+    col = dict(zip(order,range(len(order))))
+    df['col_from_table'] = df['group'].map(col)
+    return df
+
+#extract specimen # from index and adds as row
+def add_specimen_mapping(df):
+    temp = []
+    print df
+    for i in list(df.index):
+        m = re.search(r"[_\s][0-9]+.fcs",i)
+        temp.append(m.group())
+    df['col_from_ind'] = temp
+    return df
+
+def sort_by_group_specimen(df_RAW):
+    return df_RAW.sort_values(by=['col_from_table','col_from_ind'],ascending = [True,True],inplace=False)
+
+def drop_temp_columns(df_RAW):
+    df_RAW.drop('col_from_table', 1,inplace = True)
+    df_RAW.drop('col_from_ind',1,inplace = True)
+    return df_RAW
+
+def drop_stats_rows(df):
+    df = df.drop(['Mean','SD'],inplace=False)
+    return df
+
+def create_sort_list(df_table):
+    order = list(df_table.columns)
+    order.append('ungrouped')
+    return order
+
+def string_match(df,str):
+    return df.index.to_series().str.contains(str)
 
 #match raw_data row to table column
 def group_df(df_affect,df_table):
@@ -61,7 +71,7 @@ def group_df(df_affect,df_table):
     for i in df_table:
         for j in df_table[i]:
             s = "M" + str(j)
-            result = df_affect.index.to_series().str.contains(s)
+            result = string_match(df_affect,s)
             #throw errors if duplicate table entries
             #are detected in data
             if sum(result) > 1:
@@ -69,56 +79,11 @@ def group_df(df_affect,df_table):
                 print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
                 # quit()
             else:
-                df_affect.loc[df_affect.index.to_series().str.contains(s), "group"] = str(i)
+                df_affect.loc[string_match(df_affect,s), "group"] = str(i)
     return df_affect
 
-if __name__ == "__main__":
-    #load data into pandas dataframe
-
-
-    df_RAW = pd.read_excel(data_folder + filename)
-    df_RAW.index = df_RAW.index.map(str)
-
-    #add grouping column
-    df_RAW.insert(loc=0, column="group",value="ungrouped")
-
-    #read in table data
-    df_table = pd.read_excel(table_folder + table_file)
-    df_table.columns = df_table.columns.map(str)
-
-    # Drop the stats rows in the data
-    df_RAW = df_RAW.drop(['Mean','SD'])
-
-
-    #group the RAW data
-    df_RAW = group_df(df_RAW,df_table)
-
-    #sort by order of table columns
-    order = list(df_table.columns)
-    order.append('ungrouped')
-
-    col = dict(zip(order,range(len(order))))
-    df_RAW['col_from_table'] = df_RAW['group'].map(col)
-
-    #create col to sort within groups
-    temp = []
-    for i in list(df_RAW.index):
-        m = re.search(r"[_\s][0-9]+.fcs",i)
-        temp.append(m.group())
-
-
-    df_RAW['col_from_ind'] = temp
-    df_RAW.sort_values(by=['col_from_table','col_from_ind'],ascending = [True,True],inplace=True)
-
-    #drop temp columns
-    df_RAW.drop('col_from_table', 1,inplace = True)
-    df_RAW.drop('col_from_ind',1,inplace = True)
-    #print df_RAW.head(4)
-
-
-    #save data to excel file
-
-    writer = pd.ExcelWriter(save_folder + 'Rearranged '+ filename,engine = 'xlsxwriter')
+def save_to_excel(path,df_RAW):
+    writer = pd.ExcelWriter(path,engine = 'xlsxwriter')
     df_RAW.to_excel(writer,sheet_name='Sheet1')
 
     #formatting excel file
@@ -129,9 +94,6 @@ if __name__ == "__main__":
 
                                        'font':'Arial',
                                        'font_size' : 10})
-
-
-
     label_width = 40
     label = 'A:A'
     worksheet_RAW.set_column(label, label_width, cell_format)
@@ -141,3 +103,71 @@ if __name__ == "__main__":
     worksheet_RAW.set_column(columns, column_width, cell_format)
 
     writer.save()
+
+if __name__ == "__main__":
+    #load data into pandas dataframe
+    df_RAW = load_RAW(data_folder + data_file)
+    # df_RAW.index = df_RAW.index.map(str)
+
+    #add grouping column
+    # df_RAW.insert(loc=0, column="group",value="ungrouped")
+    df_RAW = add_group_col(df_RAW)
+
+    #read in table data
+    # df_table = pd.read_excel(table_folder + table_file)
+    # df_table.columns = df_table.columns.map(str)
+    df_table = load_table(data_folder + table_file)
+
+    # Drop the stats rows in the data
+    df_RAW = drop_stats_rows(df_RAW)
+
+    #group the RAW data
+    df_RAW = group_df(df_RAW,df_table)
+
+    #sort by order of table columns
+    # order = list(df_table.columns)
+    # order.append('ungrouped')
+    order = create_sort_list(df_table)
+
+    df_RAW = add_group_mapping(df_RAW,order)
+    # col = dict(zip(order,range(len(order))))
+    # df_RAW['col_from_table'] = df_RAW['group'].map(col)
+
+    #create col to sort within groups
+    df_RAW = add_specimen_mapping(df_RAW)
+
+
+    #df_RAW['col_from_ind'] = temp
+    #df_RAW.sort_values(by=['col_from_table','col_from_ind'],ascending = [True,True],inplace=True)
+    df_RAW = sort_by_group_specimen(df_RAW)
+    #drop temp columns
+    # df_RAW.drop('col_from_table', 1,inplace = True)
+    # df_RAW.drop('col_from_ind',1,inplace = True)
+    df_RAW = drop_temp_columns(df_RAW)
+
+    #save data to excel file
+    path = save_folder + 'Rearranged '+ data_file
+    save_to_excel(path,df_RAW)
+    # writer = pd.ExcelWriter(save_folder + 'Rearranged '+ data_file,engine = 'xlsxwriter')
+    # df_RAW.to_excel(writer,sheet_name='Sheet1')
+    #
+    # #formatting excel file
+    # workbook = writer.book
+    # worksheet_RAW = writer.sheets['Sheet1']
+    #
+    # cell_format = workbook.add_format({'align':'right',
+    #
+    #                                    'font':'Arial',
+    #                                    'font_size' : 10})
+    #
+    #
+    #
+    # label_width = 40
+    # label = 'A:A'
+    # worksheet_RAW.set_column(label, label_width, cell_format)
+    #
+    # column_width = 18
+    # columns = 'B:BB'
+    # worksheet_RAW.set_column(columns, column_width, cell_format)
+    #
+    # writer.save()
