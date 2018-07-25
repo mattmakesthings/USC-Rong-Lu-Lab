@@ -63,7 +63,6 @@ def transform(src_df,sheet_name):
         subgroups[row.group]+=1
 
     #copy over rows and insert blanks
-    print subgroups
     for k,v in subgroups.items():
         cp_df = cp_df.append(dest_df[dest_df['group']==k],ignore_index = True)
 
@@ -75,7 +74,6 @@ def transform(src_df,sheet_name):
                 quit()
 
         #add empty rows for the gap between limit and chimerisms
-        print k + " ," + str(chimerism - v)
         for i in range(chimerism - v):
             cp_df = cp_df.append(empty_row)
 
