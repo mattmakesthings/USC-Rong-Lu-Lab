@@ -12,21 +12,16 @@ from data_regroup import create_save_folder, create_path, prepend_folder,load_ta
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'CLP 2.0 2mo RAW.xls'
+data_file = 'IL10KO 1.0 4mo RAW.xls'
 
-table_file  = 'HSC-CLP 2.0 Table.xlsx'
-table_folder = 'Table/'
 
-load_folder = 'Calculated for Prism/'
-save_folder = 'Transposed Calculated for Prism/'
+sub_folder = 'IL10KO'
+load_folder = 'Calculated for Prism'
 
-load_folder = prepend_folder(load_folder)
-save_folder = prepend_folder(save_folder)
-table_folder = prepend_folder(table_folder)
+save_folder = 'Transposed Calculated for Prism'
 
-load_path = create_path(load_folder,data_file,' GraphPad ')
-save_path = create_path(save_folder,data_file,' GraphPad Transposed ')
-table_path = table_folder + table_file
+table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_folder = 'Table'
 
 chimerism = 10
 
@@ -121,7 +116,18 @@ def save_to_excel(writer):
 
 
 if __name__ == "__main__":
-    #load data into pandas dataframe
+    load_folder = prepend_folder(load_folder)
+    save_folder = prepend_folder(save_folder)
+    table_folder = prepend_folder(table_folder)
+
+    load_folder = os.path.join(load_folder,sub_folder)
+    save_folder = os.path.join(save_folder,sub_folder)
+    table_path = os.path.join(table_folder,table_file)
+
+    load_path = create_path(load_folder,data_file,' GraphPad ')
+    save_path = create_path(save_folder,data_file,' GraphPad Transposed ')
+
+
     gp_paste_df = load_excel(load_path)
     df_table = load_table(table_path)
     writer = create_cell_sheets(gp_paste_df,df_table,save_path)

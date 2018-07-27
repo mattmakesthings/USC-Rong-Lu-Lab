@@ -13,10 +13,11 @@ version = get_version()
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'CLP 2.0 2mo RAW.xls'
+data_file = 'IL10KO 1.0 4mo RAW.xls'
 
-load_folder = 'Rearranged Data/'
-save_folder = 'Calculated for Prism/'
+sub_folder = 'IL10KO'
+load_folder = 'Rearranged Data'
+save_folder = 'Calculated for Prism'
 
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
@@ -87,10 +88,13 @@ def save_to_excel(path,all_df,rearranged_df,subtype_df,gp_paste_df):
     writer.save()
 
 if __name__ == "__main__":
-    load_path = create_path(load_folder,data_file,' Rearranged ')
+    load_path = [load_folder,sub_folder]
+    load_path = os.path.join(*load_path)
+    load_path = create_path(load_path,data_file,' Rearranged ')
     rearranged_df = load_data(load_path)
     all_df , subtype_df , gp_paste_df = create_dfs(rearranged_df)
 
+    save_folder = os.path.join(save_folder,sub_folder)
     create_save_folder(save_folder)
     path = create_path(save_folder,data_file,' GraphPad ')
     save_to_excel(path,all_df,rearranged_df,subtype_df,gp_paste_df)

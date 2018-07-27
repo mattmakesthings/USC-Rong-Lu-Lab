@@ -11,17 +11,17 @@ import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
 data_file = 'IL10KO 1.0 4mo RAW.xls'
-data_folder = 'Data/IL10KO/'
+sub_folder = 'IL10KO'
+data_folder = 'Data'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table/'
+table_folder = 'Table'
 
-save_folder = 'Rearranged Data/'
+save_folder = 'Rearranged Data'
 
-#parent_dir = os.path.dirname(os.getcwd())
-
+#prepends folder parent directory to folder name
 def prepend_folder(s):
     parent_dir = os.path.dirname(os.getcwd())
-    return parent_dir + "/" + s
+    return os.path.join(parent_dir,s)
 
 data_folder = prepend_folder(data_folder)
 table_folder = prepend_folder(table_folder)
@@ -87,8 +87,6 @@ def group_df(df_affect,df_table):
             result = string_match(df_affect,s)
             #throw errors if duplicate table entries
             #are detected in data
-            if sum(result) == 0:
-                print type(j)
             if sum(result) > 1:
                 print '\n'.join([k for k,v in result.iteritems() if v == True ])
                 print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
@@ -135,22 +133,24 @@ def create_path(folder,data_file,identifier = ''):
     from version import get_version
     version = get_version()
 
-    if version not in data_file:
+    if version not in data_file and version:
         data_file = version + identifier + data_file
-    return folder + data_file
+    return os.path.join(folder,data_file)
 
 if __name__ == "__main__":
     # load data into pandas dataframe
-    df_RAW = load_data(data_folder + data_file)
+    data_path = [data_folder,sub_folder,data_file]
+    data_path = os.path.join(*data_path)
+    df_RAW = load_data(data_path)
+
     # load table data into dataframe
-    df_table = load_table(table_folder + table_file)
+    path = os.path.join(table_folder,table_file)
+    df_table = load_table(path)
     df_table = df_table.apply(pd.to_numeric)
-    print df_table
     # group data
     df_RAW = get_grouped_data(df_RAW,df_table)
 
     #save data to excel file
-
     create_save_folder(save_folder)
     path = create_path(save_folder,data_file,' Rearranged ')
     save_to_excel(path,df_RAW)
