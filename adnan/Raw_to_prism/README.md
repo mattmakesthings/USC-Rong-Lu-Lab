@@ -18,8 +18,10 @@ separates the data for each cell type into separate excel sheets
 
 
 ## To Run:
-Place the raw data you'd like to run in a folder named 'RAW Data'
-otherwise rename the data_folder variable in pipeline.py
+Place the raw data you'd like to process into a folder, then put that folder
+into the 'Data' folder. Lastly change the sub_folder variable to match the name of the 
+folder that you put your data in. 
+
 
 Then run the pipeline.py script
 
