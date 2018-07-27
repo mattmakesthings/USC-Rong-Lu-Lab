@@ -15,16 +15,15 @@ import subtype_sheets as ss
 from version import get_version
 version = get_version()
 
-# the Data folder has been restructured so that all files of a group
-# sub_folder specifies the sub folder for all folders created
-# like the 'IL10KO' group are under the same subfolder
-sub_folder = 'IL10KO'
+#sub_folder should reflect the name of the folder within the 'Data' folder
+#that you want to be processed
+sub_folder = 'CLP 2.0'
 data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
-#table file
-table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table'
 
+#table file
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_folder = 'Table'
 
 
 save_folder_dr = 'Rearranged Data'

@@ -53,7 +53,7 @@ def add_group_mapping(df,order):
 def add_specimen_mapping(df):
     temp = []
     for i in list(df.index):
-        m = re.search(r"[_\s][0-9]+.fcs",i)
+        m = re.search(r"\_M[0-9]+",i)
         temp.append(m.group())
     df['col_from_ind'] = temp
     return df
@@ -66,8 +66,12 @@ def drop_temp_columns(df_RAW):
     df_RAW.drop('col_from_ind',1,inplace = True)
     return df_RAW
 
-def drop_stats_rows(df):
-    df = df.drop(['Mean','SD'],inplace=False)
+def drop_nonspecimen_rows(df):
+    reg = re.compile(r"\_M[0-9]+")
+    for i in list(df.index):
+        if not reg.search(i):
+            print "Specimen name not found, dropping : " + i
+            df = df.drop(i)
     return df
 
 def create_sort_list(df_table):
@@ -120,7 +124,7 @@ def save_to_excel(path,df_RAW):
     writer.save()
 
 def get_grouped_data(df_RAW,df_table):
-    df_RAW = drop_stats_rows(df_RAW)
+    df_RAW = drop_nonspecimen_rows(df_RAW)
     df_RAW = add_group_col(df_RAW)
     df_RAW = group_df(df_RAW,df_table)
     order = create_sort_list(df_table)
