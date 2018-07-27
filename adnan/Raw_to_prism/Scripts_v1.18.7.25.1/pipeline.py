@@ -21,7 +21,6 @@ sub_folder = 'CLP 2.0'
 data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
 
-#table file
 table_file = 'HSC-CLP 2.0 Table.xlsx'
 table_folder = 'Table'
 
