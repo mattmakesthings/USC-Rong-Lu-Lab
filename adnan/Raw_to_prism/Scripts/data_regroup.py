@@ -3,6 +3,7 @@
 #script to group specimen data given a table file
 import pandas as pd
 import numpy as np
+import math
 import os
 import sys
 import re
@@ -82,17 +83,18 @@ def group_df(df_affect,df_table):
     #iterates through table excel sheet
     for i in df_table:
         for j in df_table[i]:
-            j = str(j.astype(np.int64))
-            s = "M" + j
-            result = string_match(df_affect,s)
-            #throw errors if duplicate table entries
-            #are detected in data
-            if sum(result) > 1:
-                print '\n'.join([k for k,v in result.iteritems() if v == True ])
-                print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
-                # quit()
-            else:
-                df_affect.loc[string_match(df_affect,s), "group"] = str(i)
+            if not math.isnan(j):
+                j = str(np.int64(j))
+                s = "M" + j
+                result = string_match(df_affect,s)
+                #throw errors if duplicate table entries
+                #are detected in data
+                if sum(result) > 1:
+                    print '\n'.join([k for k,v in result.iteritems() if v == True ])
+                    print ("Error: duplicate entries of " + str(i) + " " + str(j) + " detected")
+                    # quit()
+                else:
+                    df_affect.loc[string_match(df_affect,s), "group"] = str(i)
     return df_affect
 
 def save_to_excel(path,df_RAW):
