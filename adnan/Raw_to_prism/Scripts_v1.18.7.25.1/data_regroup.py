@@ -50,10 +50,13 @@ def add_group_mapping(df,order):
     return df
 
 #extract specimen # from index and adds as row
+def get_regex():
+    return r"[\_\s]M[0-9]+"
+
 def add_specimen_mapping(df):
     temp = []
     for i in list(df.index):
-        m = re.search(r"\_M[0-9]+",i)
+        m = re.search(get_regex(),i)
         temp.append(m.group())
     df['col_from_ind'] = temp
     return df
@@ -67,7 +70,7 @@ def drop_temp_columns(df_RAW):
     return df_RAW
 
 def drop_nonspecimen_rows(df):
-    reg = re.compile(r"\_M[0-9]+")
+    reg = re.compile(get_regex())
     for i in list(df.index):
         if not reg.search(i):
             print "Specimen name not found, dropping : " + i
