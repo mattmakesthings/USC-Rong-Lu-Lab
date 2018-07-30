@@ -28,8 +28,8 @@ data_folder = prepend_folder(data_folder)
 table_folder = prepend_folder(table_folder)
 save_folder = prepend_folder(save_folder)
 
-def load_data(path):
-    return pd.read_excel(path)
+def load_data(path,sheet_name = 0):
+    return pd.read_excel(path,sheet_name)
 
 def load_table(path):
     df_table = load_data(path)

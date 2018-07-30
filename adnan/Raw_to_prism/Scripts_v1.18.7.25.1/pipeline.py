@@ -17,11 +17,11 @@ version = get_version()
 
 #sub_folder should reflect the name of the folder within the 'Data' folder
 #that you want to be processed
-sub_folder = 'CLP 2.0'
+sub_folder = 'IL10KO'
 data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
 
-table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
 
 
