@@ -45,5 +45,5 @@ if __name__ == "__main__":
 
         #iterate through sheets in file
         for sheet in sheet_names:
-            print df[sheet].columns
+            print df[sheet].values
         break
