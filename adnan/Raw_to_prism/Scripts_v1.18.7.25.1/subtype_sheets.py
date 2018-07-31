@@ -59,7 +59,7 @@ def transform(src_df,sheet_name,df_table):
 
     #copy over rows and insert blanks
     for k,v in subgroups.items():
-        cp_df = cp_df.append(dest_df[dest_df['group']==k],ignore_index = True)
+        cp_df = cp_df.append(dest_df[dest_df['group']==k],ignore_index = False)
 
         if chimerism - v < 0:
             if k == 'ungrouped':
