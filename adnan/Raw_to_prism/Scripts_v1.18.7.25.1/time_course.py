@@ -28,7 +28,7 @@ table_folder -> contains the table_file
 ##################################################################
 chimerism = 10
 time_unit = "mo"
-sub_folder = 'IL10 1.0'
+sub_folder = 'IL10KO'
 load_folder = 'Transposed Calculated for Prism'
 save_file = sub_folder+'.xlsx'
 save_folder = 'Time course for Prism'
@@ -40,6 +40,73 @@ load_folder = os.path.join(load_folder,sub_folder)
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
 
+def get_files(folder_):
+    return os.listdir(folder_)
+
+def files_to_dict(files):
+    return OrderedDict(zip(files,[0]*len(files)))
+
+def ordered_dict_from_lists(l1,l2):
+    return OrderedDict(zip(l1,l2))
+
+def remove_non_excel(files):
+    ret = []
+    for f in files:
+        if f.endswith('.xls') or f.endswith('.xlsx'):
+            ret.append(f)
+    return ret
+
+def insert_time(file_dict,time_unit):
+    for k,v in file_dict.items():
+        m = re.search(r"[0-9]+" + re.escape(time_unit), k)
+        if m == None:
+            raise AttributeError('var time_unit doesn\'t match files')
+
+        s = m.group(0).replace(time_unit,'')
+        file_dict[k] = int(s)
+    return file_dict
+
+def get_df_dict(load_folder,data_file):
+    load_path = create_path(load_folder,data_file, '')
+    df = load_data(load_path,sheet_name = None)
+    return df
+
+def get_sheet_names(file_dict,df):
+    sheet_list = []
+    sheet_names = list(df)
+    for data_file, ind in file_dict.items():
+        #iterate through sheets in file
+        for sheet in sheet_names:
+            for name in df[sheet].index:
+                if name != 'group':
+                    sheet_list.append(name)
+        break
+    return sheet_list
+
+
+def get_specimen_names(df,sheet_list):
+    sheet =  sheet_list[0]
+    df_col = df[sheet].columns
+    df_col_r = []
+    for i in df_col:
+        m = re.search(get_regex(),i)
+        if m != None:
+            df_col_r.append(m.group())
+        else:
+            df_col_r.append('')
+
+    return df_col_r
+
+def list_of_df(length,col,ind):
+    df_list = []
+    for i in range(length):
+        df_list.append(pd.DataFrame(columns=col,index =ind))
+    return df_list
+
+def sort_time(file_dict,time_unit):
+    for key, value in sorted(file_dict.iteritems(), key=lambda (k,v): (v,k)):
+        file_dict[key] = str(value) + time_unit
+    return file_dict
 
 def grp(pat,txt):
     r = re.search(pat,txt)
@@ -51,65 +118,9 @@ def sort_files(file_list,time_unit):
     #file_list.sort(key= lambda l: grp("[0-9].[0-9]" ,l))
     return file_list
 
-if __name__ == "__main__":
-
-    file_list = os.listdir(load_folder)
-
-    file_dict = OrderedDict(zip(file_list,[0]*len(file_list)))
-    for k,v in file_dict.items():
-        if '.~lock' in k:
-            del file_dict[k]
-        else:
-            m = re.search(r"[0-9]+" + re.escape(time_unit), k)
-            if m == None:
-                raise AttributeError('var time_unit doesn\'t match files')
-
-            s = m.group(0).replace(time_unit,'')
-            file_dict[k] = int(s)
-
-
-    #sort file dictionary by given time unit
-    file_list = OrderedDict()
-    for key, value in sorted(file_dict.iteritems(), key=lambda (k,v): (v,k)):
-        file_list[key] = str(value) + time_unit
-
-    # iterate through file to create sheet names
-    sheet_list = []
-    for data_file, ind in file_list.items():
-        load_path = create_path(load_folder,data_file, '')
-        df = load_data(load_path,sheet_name = None)
-        sheet_names = list(df)
-        #print data_file
-        #iterate through sheets in file
-        for sheet in sheet_names:
-            for name in df[sheet].index:
-                if name != 'group':
-                    sheet_list.append(name)
-        break
-
-    #create list that contain filtered specimen names
-    sheet =  sheet_names[0]
-    df_col = df[sheet].columns
-    df_col_r = []
-    for i in df_col:
-        m = re.search(get_regex(),i)
-        if m != None:
-            df_col_r.append(m.group())
-        else:
-            df_col_r.append('')
-
-    for n in df_col:
-        if 'Unnamed' in n:
-            n = ''
-    df_list = []
-    for i in range(len(sheet_list)):
-        df_list.append(pd.DataFrame(columns= df_col_r,index = file_list.values()))
-
-    time_dict = OrderedDict(zip(sheet_list,df_list))
-
-
+def fill_time_dict(file_dict,load_folder,time_dict,df_col_r):
     # iterate through files to create dataframe
-    for data_file, ind in file_list.items():
+    for data_file, ind in file_dict.items():
         print 'operations on ' + data_file
         load_path = create_path(load_folder,data_file, '')
 
@@ -136,11 +147,10 @@ if __name__ == "__main__":
                             if spec_name in df_col_r:
                                 val = row[src_col_r.index(spec_name)]
                                 time_df.loc[ind][spec_name] = val
+    return time_dict
 
-
+def append_groups(time_dict,table_path,chimerism):
     #insert row with group names
-    table_folder = prepend_folder(table_folder)
-    table_path = os.path.join(table_folder,table_file)
     df_table = load_data(table_path)
     group_row = []
     for col_name in df_table.columns:
@@ -156,10 +166,9 @@ if __name__ == "__main__":
         time_df.loc[-1] = pd.Series(group_row,index = df_col_r)
         # time_df = time.sort_index
         # time_df.index = time_df['temp_ind']
+    return time_dict
 
-
-
-
+def write_to_excel(time_dict,save_path):
     #save data to file
     create_save_folder(save_folder)
     save_path = create_path(save_folder,save_file,' Time course ')
@@ -184,3 +193,34 @@ if __name__ == "__main__":
         worksheet_RAW.set_column(columns, column_width, cell_format)
 
     writer.save()
+
+
+if __name__ == "__main__":
+
+    files = get_files(load_folder)
+    files = remove_non_excel(files)
+    file_dict = files_to_dict(files)
+    file_dict = insert_time(file_dict,time_unit)
+
+    #sort file dictionary by given time unit
+    file_dict = sort_time(file_dict,time_unit)
+    # iterate through file to create sheet names
+    df = get_df_dict(load_folder,files[0])
+    sheet_list = get_sheet_names(file_dict,df)
+
+    #create list that contain filtered specimen names
+    df_col_r = get_specimen_names(df,sheet_list)
+    df_list = list_of_df(len(sheet_list),df_col_r, file_dict.values())
+
+    #create ordered dict to tie sheetnames to dataframes
+    time_dict = ordered_dict_from_lists(sheet_list,df_list)
+
+    #fill time_dict with data from files
+    time_dict = fill_time_dict(file_dict,load_folder,time_dict,df_col_r)
+    table_folder = prepend_folder(table_folder)
+    table_path = os.path.join(table_folder,table_file)
+
+    #add the group row
+    time_dict = append_groups(time_dict,table_path,chimerism)
+    save_path = os.path.join(save_folder,save_file)
+    write_to_excel(time_dict,save_path)
