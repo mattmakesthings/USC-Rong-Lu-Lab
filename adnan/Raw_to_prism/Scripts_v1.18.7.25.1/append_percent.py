@@ -51,6 +51,7 @@ def create_gp_paste_df(all_df, subtype_df):
     return df_dest
 
 def create_dfs(df):
+    df = df[df.group != 'ungrouped']
     all_df = create_all_df(df)
     st_df = create_subtype_df(df)
     return all_df , st_df ,create_gp_paste_df(all_df,st_df)

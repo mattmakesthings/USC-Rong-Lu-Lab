@@ -1,27 +1,51 @@
 # this script combines multiple files to compare
 # specimens over time
+# IMPORTANT:
+#       relies on results of either the pipeline script or the subtype_sheets script
+#       set the chimerism var to be equal to the value of the script used above
+
+
 
 import pandas as pd
 import os
 import re
-from data_regroup import load_data, prepend_folder, create_path
+from data_regroup import load_data, prepend_folder, create_path, create_save_folder, get_regex
 from collections import OrderedDict
+'''
+time unit -> time unit used in input file names
 
-time_unit = "d"
+sub_folder -> this is the folder in the load folder that contains the data
+to be used
 
-data_file = 'IL10KO 1.0 4mo RAW.xls'
-sub_folder = 'CLP 2.0'
+load_folder -> this is the folder in which the load folder is contained
+
+save_file -> the name of the resulting file once the script has finished
+
+save_folder -> this will contain the save_file and wil be created if it
+does not already exist
+
+table_file -> used when creating the initial data
+
+table_folder -> contains the table_file
+
+
+
+'''
+##################################################################
+chimerism = 10
+time_unit = "mo"
+sub_folder = 'IL10KO'
+load_folder = 'Transposed Calculated for Prism'
+save_file = sub_folder+'.xlsx'
+save_folder = 'Time course for Prism'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
+##################################################################
 
-load_folder = 'Transposed Calculated for Prism'
 load_folder = os.path.join(load_folder,sub_folder)
-
-save_folder = 'Transposed Calculated for Prism'
-
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
-table_folder = prepend_folder(table_folder)
+
 
 def grp(pat,txt):
     r = re.search(pat,txt)
@@ -39,59 +63,158 @@ if __name__ == "__main__":
 
     file_dict = OrderedDict(zip(file_list,[0]*len(file_list)))
     for k,v in file_dict.items():
-        m = re.search(r"[0-9]+" + re.escape(time_unit), k)
-        s = m.group(0).replace('d','')
-        file_dict[k] = int(s)
         if '.~lock' in k:
             del file_dict[k]
+        else:
+            m = re.search(r"[0-9]+" + re.escape(time_unit), k)
+            if m == None:
+                raise AttributeError('var time_unit doesn\'t match files')
+
+            s = m.group(0).replace(time_unit,'')
+            file_dict[k] = int(s)
+
 
     #sort file dictionary by given time unit
-    file_list = []
+    file_list = OrderedDict()
     for key, value in sorted(file_dict.iteritems(), key=lambda (k,v): (v,k)):
-        file_list.append(key)
+        file_list[key] = str(value) + time_unit
     # print file_dict
     # for i in file_list:
     #     print i
 
     #create list of files for dataframe index
-    f_ind = OrderedDict()
-    for f in file_list:
-        ind = f.replace(' Graph Pad Transposed ','')
-        ind = ind.replace(' GraphPad Transposed ','')
-        f_ind[f] = ind
-
+    # f_ind = OrderedDict()
+    # for data_file in file_list:
+    #     if '.~lock' not in data_file:
+    #         ind = data_file.replace(' Graph Pad Transposed ','')
+    #         ind = ind.replace(' GraphPad Transposed ','')
+    #         f_ind[data_file] = ind
 
     # iterate through file to create sheet names
     sheet_list = []
-    for data_file, ind in f_ind.items():
-        load_path = create_path(load_folder,data_file, '')
-        df = load_data(load_path,sheet_name = None)
-        sheet_names = list(df)
-        print data_file
-        #iterate through sheets in file
-        for sheet in sheet_names:
-            for name in df[sheet].index:
-                sheet_list.append(name)
-        break
-
-    # create dictionary to tie
-    # sheet names to dataframe
-    sheet_list = [s for s in sheet_list if s != 'group']
-    df_list = []
-    for i in range(len(sheet_list)):
-        df_list.append(pd.DataFrame(columns=))
-
-    sheet_dict = OrderedDict(zip(sheet_list,df_list))
-
-    print sheet_dict[sheet_list[0]]
-
-    # iterate through files to create dataframe
-    for data_file, ind in f_ind.items():
+    for data_file, ind in file_list.items():
         load_path = create_path(load_folder,data_file, '')
         df = load_data(load_path,sheet_name = None)
         sheet_names = list(df)
         #print data_file
         #iterate through sheets in file
+        for sheet in sheet_names:
+            for name in df[sheet].index:
+                if name != 'group':
+                    sheet_list.append(name)
+        break
+
+    # create dictionary to tie
+    # sheet names to dataframe
+    # sheet_list = [s for s in sheet_list if s != 'group']
+    sheet =  sheet_names[0]
+    df_col = df[sheet].columns
+    df_col_r = []
+
+    for i in df_col:
+        m = re.search(get_regex(),i)
+        if m != None:
+            df_col_r.append(m.group())
+        else:
+            df_col_r.append('')
+
+    for n in df_col:
+        if 'Unnamed' in n:
+            n = ''
+    df_list = []
+    for i in range(len(sheet_list)):
+        df_list.append(pd.DataFrame(columns= df_col_r,index = file_list.values()))
+
+    time_dict = OrderedDict(zip(sheet_list,df_list))
+    # for sheet,df in time_dict.items():
+    #     print sheet
+
+    # iterate through files to create dataframe
+    for data_file, ind in file_list.items():
+        print 'operations on ' + data_file
+        load_path = create_path(load_folder,data_file, '')
+
+        #gets dict of dataframes
+        file_dfs = load_data(load_path,sheet_name = None)
+        sheet_names = list(file_dfs)
+        #print data_file
+        # print sheet_names
+        #iterate through sheets in file
+        for sheet, df in file_dfs.items():
+            #convert columns of file to regexd strings
+            src_col_r = []
+            for i in df.columns:
+                m = re.search(get_regex(),i)
+                if m != None:
+                    src_col_r.append(m.group())
+                else:
+                    src_col_r.append('')
+
+            if ind == '4mo':
+                print df_col_r
+                print '**************'
+                print src_col_r
+
+            #iterate over rows to copy into new dataframes
+            for index, row in df.iterrows():
+                for sheet, time_df in time_dict.items():
+                    if index == sheet:
+                        for spec_name in src_col_r:
+                            if spec_name in df_col_r:
+                                val = row[src_col_r.index(spec_name)]
+                                time_df.loc[ind][spec_name] = val
+                            # # time_df_col =
+                            # ss = m.group()
+                            # time_df.loc[ind][] = row.values
+                        # print "***" + sheet
+                        # print row.values
         # for sheet in sheet_names:
-        #      print df[sheet]
-        # break
+        #       print df[sheet].index
+        #       break
+
+    #insert row with group names
+    table_folder = prepend_folder(table_folder)
+    table_path = os.path.join(table_folder,table_file)
+    df_table = load_data(table_path)
+    group_row = []
+    for col_name in df_table.columns:
+        group_row.append(col_name)
+        for x in range(chimerism - 1):
+            group_row.append('')
+
+    group_row = group_row[:-(len(group_row)- len(df_col_r))]
+    # group_df = pd.DataFrame()
+    # group_df = group_df.append(pd.Series(group_row,index = df_col_r), ignore_index = True)
+
+    for sheet, time_df in time_dict.items():
+        time_df.loc[-1] = pd.Series(group_row,index = df_col_r)
+        # time_df = time.sort_index
+        # time_df.index = time_df['temp_ind']
+
+
+
+
+    #save data to file
+    create_save_folder(save_folder)
+    save_path = create_path(save_folder,save_file,' Time course ')
+    writer = pd.ExcelWriter(save_path,engine='xlsxwriter')
+
+    for sheet, time_df in time_dict.items():
+        time_df.to_excel(writer,sheet_name = sheet)
+        #formatting excel file
+        workbook = writer.book
+        worksheet_RAW = writer.sheets[sheet]
+
+        cell_format = workbook.add_format({'align':'right',
+
+                                           'font':'Arial',
+                                           'font_size' : 10})
+        label_width = 40
+        label = 'A:A'
+        worksheet_RAW.set_column(label, label_width, cell_format)
+
+        column_width = 18
+        columns = 'B:BB'
+        worksheet_RAW.set_column(columns, column_width, cell_format)
+
+    writer.save()

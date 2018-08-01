@@ -17,11 +17,11 @@ version = get_version()
 
 #sub_folder should reflect the name of the folder within the 'Data' folder
 #that you want to be processed
-sub_folder = 'CLP'
+sub_folder = 'IL10KO'
 data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
 
-table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
 
 
@@ -43,7 +43,7 @@ table_path = os.path.join(table_folder,table_file)
 
 #max length of subgroups
 ss.chimerism = 10
-
+chimerism = ss.chimerism
 if __name__ == "__main__":
 
     for data_file in os.listdir(data_folder):

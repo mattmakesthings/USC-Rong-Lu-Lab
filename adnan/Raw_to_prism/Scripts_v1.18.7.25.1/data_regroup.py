@@ -51,7 +51,7 @@ def add_group_mapping(df,order):
 
 #extract specimen # from index and adds as row
 def get_regex():
-    return r"[\_\s]M[0-9]+"
+    return r"M[0-9]+"
 
 def add_specimen_mapping(df):
     temp = []
