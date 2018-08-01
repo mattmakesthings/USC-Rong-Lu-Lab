@@ -17,7 +17,7 @@ version = get_version()
 
 #sub_folder should reflect the name of the folder within the 'Data' folder
 #that you want to be processed
-sub_folder = 'IL10KO'
+sub_folder = 'IL10 1.0'
 data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
 

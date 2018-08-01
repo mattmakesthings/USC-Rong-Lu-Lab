@@ -3,9 +3,6 @@
 # IMPORTANT:
 #       relies on results of either the pipeline script or the subtype_sheets script
 #       set the chimerism var to be equal to the value of the script used above
-
-
-
 import pandas as pd
 import os
 import re
@@ -27,14 +24,11 @@ does not already exist
 table_file -> used when creating the initial data
 
 table_folder -> contains the table_file
-
-
-
 '''
 ##################################################################
 chimerism = 10
 time_unit = "mo"
-sub_folder = 'IL10KO'
+sub_folder = 'IL10 1.0'
 load_folder = 'Transposed Calculated for Prism'
 save_file = sub_folder+'.xlsx'
 save_folder = 'Time course for Prism'
@@ -78,17 +72,6 @@ if __name__ == "__main__":
     file_list = OrderedDict()
     for key, value in sorted(file_dict.iteritems(), key=lambda (k,v): (v,k)):
         file_list[key] = str(value) + time_unit
-    # print file_dict
-    # for i in file_list:
-    #     print i
-
-    #create list of files for dataframe index
-    # f_ind = OrderedDict()
-    # for data_file in file_list:
-    #     if '.~lock' not in data_file:
-    #         ind = data_file.replace(' Graph Pad Transposed ','')
-    #         ind = ind.replace(' GraphPad Transposed ','')
-    #         f_ind[data_file] = ind
 
     # iterate through file to create sheet names
     sheet_list = []
@@ -104,13 +87,10 @@ if __name__ == "__main__":
                     sheet_list.append(name)
         break
 
-    # create dictionary to tie
-    # sheet names to dataframe
-    # sheet_list = [s for s in sheet_list if s != 'group']
+    #create list that contain filtered specimen names
     sheet =  sheet_names[0]
     df_col = df[sheet].columns
     df_col_r = []
-
     for i in df_col:
         m = re.search(get_regex(),i)
         if m != None:
@@ -126,8 +106,7 @@ if __name__ == "__main__":
         df_list.append(pd.DataFrame(columns= df_col_r,index = file_list.values()))
 
     time_dict = OrderedDict(zip(sheet_list,df_list))
-    # for sheet,df in time_dict.items():
-    #     print sheet
+
 
     # iterate through files to create dataframe
     for data_file, ind in file_list.items():
@@ -137,8 +116,7 @@ if __name__ == "__main__":
         #gets dict of dataframes
         file_dfs = load_data(load_path,sheet_name = None)
         sheet_names = list(file_dfs)
-        #print data_file
-        # print sheet_names
+
         #iterate through sheets in file
         for sheet, df in file_dfs.items():
             #convert columns of file to regexd strings
@@ -150,11 +128,6 @@ if __name__ == "__main__":
                 else:
                     src_col_r.append('')
 
-            if ind == '4mo':
-                print df_col_r
-                print '**************'
-                print src_col_r
-
             #iterate over rows to copy into new dataframes
             for index, row in df.iterrows():
                 for sheet, time_df in time_dict.items():
@@ -163,14 +136,7 @@ if __name__ == "__main__":
                             if spec_name in df_col_r:
                                 val = row[src_col_r.index(spec_name)]
                                 time_df.loc[ind][spec_name] = val
-                            # # time_df_col =
-                            # ss = m.group()
-                            # time_df.loc[ind][] = row.values
-                        # print "***" + sheet
-                        # print row.values
-        # for sheet in sheet_names:
-        #       print df[sheet].index
-        #       break
+
 
     #insert row with group names
     table_folder = prepend_folder(table_folder)
