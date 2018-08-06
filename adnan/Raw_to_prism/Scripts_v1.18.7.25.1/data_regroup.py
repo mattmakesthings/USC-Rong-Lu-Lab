@@ -1,4 +1,33 @@
 #! /usr/bin/python2.7
+'''
+Directory structure::
+    root folder
+        Data
+        Table
+        Scripts_<version_identifier>
+        
+Primary Variables - Will be modified most often
+    data_file - raw data file to be operated on
+    data_folder - contains the file(s) of raw data to be operated on
+    table_file - Groups specimens according to column within table
+    table_folder - contains table_file
+
+Secondary Variables - Modify at user discretion,
+                      mainly names of folders to be created
+    sub_folder - refer to pipeline.py script for details
+    save_folder - folder that will be created if it doesn't exist,
+                  will store all files created by this script.
+'''
+################################################################################
+# Primary Variables
+data_file = 'IL10KO 1.0 4mo RAW.xls'
+data_folder = 'Data'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_folder = 'Table'
+################################################################################
+# Secondary Variables
+sub_folder = ''
+save_folder = 'Rearranged Data'
 
 #script to group specimen data given a table file
 import pandas as pd
@@ -11,13 +40,6 @@ import re
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'IL10KO 1.0 4mo RAW.xls'
-sub_folder = 'IL10KO'
-data_folder = 'Data'
-table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table'
-
-save_folder = 'Rearranged Data'
 
 #prepends folder parent directory to folder name
 def prepend_folder(s):

@@ -1,4 +1,31 @@
 #! /usr/bin/python2.7
+'''
+Directory structure::
+    root folder
+        Data
+        Table
+        <folder created by data_regroup.py>
+        Scripts_<version_identifier>
+
+Primary Variables - Will be modified most often
+    data_file - raw data file to be operated on
+
+Secondary Variables - Modify at user discretion,
+                      mainly names of folders to be created
+
+    sub_folder - refer to pipeline.py script for details
+    load_folder - where files from data_regroup will be loaded from.
+    save_folder - folder that will be created if it doesn't exist,
+                  will store all files created by this script.
+'''
+################################################################################
+# Primary Variables
+data_file = 'IL10KO 1.0 4mo RAW.xls'
+################################################################################
+# Secondary Variables
+sub_folder = 'IL10KO'
+load_folder = 'Rearranged Data'
+save_folder = 'Calculated for Prism'
 
 #script to group specimen data
 import pandas as pd
@@ -13,15 +40,8 @@ version = get_version()
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'IL10KO 1.0 4mo RAW.xls'
-
-sub_folder = 'IL10KO'
-load_folder = 'Rearranged Data'
-save_folder = 'Calculated for Prism'
-
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
-
 
 #column names from excel sheet
 cell_type = ["Granulocytes","Monocytes","B cells","CD4T cells","CD8T cells"]

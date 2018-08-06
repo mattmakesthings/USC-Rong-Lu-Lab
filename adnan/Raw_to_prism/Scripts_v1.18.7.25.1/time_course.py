@@ -191,7 +191,6 @@ def write_to_excel(time_dict,save_path):
         column_width = 18
         columns = 'B:BB'
         worksheet_RAW.set_column(columns, column_width, cell_format)
-
     writer.save()
 
 

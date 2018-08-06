@@ -2,6 +2,43 @@
 
 # script to automate the execution of converting raw data
 # to prism friendly copy and paste formatting
+'''
+Directory structure::
+    root folder
+        Data
+        Table
+        Scripts_<version_identifier>
+
+Primary Variables - Will be modified most often
+    data_folder - contains the file(s) of raw data to be operated on
+    table_file - Groups specimens according to column within table
+    table_folder - contains table_file
+
+Secondary Variables - Modify at user discretion, mainly names of folders to be created
+    sub_folder - Use if multiple groups of data will be contained within the data_folder
+                 rename this to match the subfolder containing the data you wish to operate on.
+                 Otherwise leave blank (sub_folder = ''). Example folder structure
+                    root folder
+                        Data
+                            sub_folder
+                        Table
+                        Scripts_<version_identifier>
+
+    save_folder_(dr,ap,ss) - These variables name the folders at their respective steps of
+                             the pipeline.
+'''
+################################################################################
+# Primary Variables
+data_folder = 'Data'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_folder = 'Table'
+################################################################################
+# Secondary Variables
+sub_folder = ''
+save_folder_dr = 'Rearranged Data'
+save_folder_ap = 'Calculated for Prism'
+save_folder_ss = 'Transposed Calculated for Prism'
+
 
 
 import os
@@ -15,20 +52,7 @@ import subtype_sheets as ss
 from version import get_version
 version = get_version()
 
-#sub_folder should reflect the name of the folder within the 'Data' folder
-#that you want to be processed
-sub_folder = 'IL10KO'
-data_folder = 'Data'
 data_folder = os.path.join(data_folder,sub_folder)
-
-table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table'
-
-
-save_folder_dr = 'Rearranged Data'
-save_folder_ap = 'Calculated for Prism'
-save_folder_ss = 'Transposed Calculated for Prism'
-
 save_folder_dr = os.path.join(save_folder_dr,sub_folder)
 save_folder_ap = os.path.join(save_folder_ap,sub_folder)
 save_folder_ss = os.path.join(save_folder_ss,sub_folder)

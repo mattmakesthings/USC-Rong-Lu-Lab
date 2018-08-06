@@ -1,4 +1,40 @@
 #! /usr/bin/python2.7
+'''
+Directory structure::
+    root folder
+        Data
+        Table
+        <folder created by data_regroup.py>
+        <folder created by append_percent.py>
+        Scripts_<version_identifier>
+
+Primary Variables - Will be modified most often
+    chimerism - this is the size limit of each group from the table file,
+                make larger if an error is thrown.
+    data_file - raw data file to be operated on
+    table_file - Groups specimens according to column within table
+    table_folder - contains table_file
+Secondary Variables - Modify at user discretion,
+                      mainly names of folders to be created
+
+    sub_folder - refer to pipeline.py script for details
+    load_folder - where files from append_percent.py will be loaded from.
+    save_folder - folder that will be created if it doesn't exist,
+                  will store all files created by this script.
+'''
+################################################################################
+# Primary Variables
+chimerism = 10
+data_file = 'IL10KO 1.0 4mo RAW.xls'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_folder = 'Table'
+################################################################################
+# Secondary Variables
+sub_folder = 'IL10KO'
+load_folder = 'Calculated for Prism'
+save_folder = 'Transposed Calculated for Prism'
+
+
 
 #script to group specimen data
 import pandas as pd
@@ -12,18 +48,7 @@ from data_regroup import create_save_folder, create_path, prepend_folder,load_ta
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-data_file = 'IL10KO 1.0 4mo RAW.xls'
 
-
-sub_folder = 'IL10KO'
-load_folder = 'Calculated for Prism'
-
-save_folder = 'Transposed Calculated for Prism'
-
-table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table'
-
-chimerism = 10
 
 def col_to_dict(df):
     d = OrderedDict()
