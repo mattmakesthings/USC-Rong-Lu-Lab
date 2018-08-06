@@ -155,7 +155,8 @@ def save_to_excel(path,df_RAW):
     ungrouped_format = workbook.add_format({'align':'right',
                                             'font':'Arial',
                                             'font_size' : 10,
-                                            'fg_color' : '#CD6155'})
+                                            'font_color' : 'white',
+                                            'fg_color' : '#FA1900'})
     format_list = []
     for i in colors:
         format_list.append(workbook.add_format({'align':'right',
@@ -171,12 +172,12 @@ def save_to_excel(path,df_RAW):
     for row in range(len(df_RAW.index)):
         if curr_group == df_RAW.iloc[row]['group']:
             worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
-        elif curr_group == 'ungrouped':
-            curr_format = ungrouped_format
-            worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
         else:
             curr_group = df_RAW.iloc[row]['group']
-            curr_format = next(format_cycle)
+            if curr_group == 'ungrouped':
+                curr_format = ungrouped_format
+            else:
+                curr_format = next(format_cycle)
             worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
     worksheet_RAW.hide_gridlines(0)
     writer.save()
@@ -203,6 +204,7 @@ def create_path(folder,data_file,identifier = ''):
 
 if __name__ == "__main__":
     # load data into pandas dataframe
+    print data_file
     data_path = [data_folder,sub_folder,data_file]
     data_path = os.path.join(*data_path)
     df_RAW = load_data(data_path)
