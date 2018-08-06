@@ -3,11 +3,7 @@
 # IMPORTANT:
 #       relies on results of either the pipeline script or the subtype_sheets script
 #       set the chimerism var to be equal to the value of the script used above
-import pandas as pd
-import os
-import re
-from data_regroup import load_data, prepend_folder, create_path, create_save_folder, get_regex
-from collections import OrderedDict
+
 '''
 time unit -> time unit used in input file names
 
@@ -28,17 +24,24 @@ table_folder -> contains the table_file
 ##################################################################
 chimerism = 10
 time_unit = "mo"
-sub_folder = 'IL10KO'
+sub_folder = ''
 load_folder = 'Transposed Calculated for Prism'
-save_file = sub_folder+'.xlsx'
+save_file = 'Time Course.xlsx'
 save_folder = 'Time course for Prism'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
 ##################################################################
 
-load_folder = os.path.join(load_folder,sub_folder)
+import pandas as pd
+import os
+import re
+from data_regroup import load_data, prepend_folder, create_path, create_save_folder, get_regex
+from collections import OrderedDict
+import operator
+
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
+load_folder = os.path.join(load_folder,sub_folder)
 
 def get_files(folder_):
     return os.listdir(folder_)
@@ -85,6 +88,7 @@ def get_sheet_names(file_dict,df):
 
 
 def get_specimen_names(df,sheet_list):
+    print sheet_list[0]
     sheet =  sheet_list[0]
     df_col = df[sheet].columns
     df_col_r = []
@@ -104,9 +108,10 @@ def list_of_df(length,col,ind):
     return df_list
 
 def sort_time(file_dict,time_unit):
-    for key, value in sorted(file_dict.iteritems(), key=lambda (k,v): (v,k)):
-        file_dict[key] = str(value) + time_unit
-    return file_dict
+    sorted_dict = OrderedDict(sorted(file_dict.items(), key=operator.itemgetter(1)))
+    for key, value in sorted_dict.items():
+        sorted_dict[key] = str(value) + time_unit
+    return sorted_dict
 
 def grp(pat,txt):
     r = re.search(pat,txt)
@@ -121,7 +126,7 @@ def sort_files(file_list,time_unit):
 def fill_time_dict(file_dict,load_folder,time_dict,df_col_r):
     # iterate through files to create dataframe
     for data_file, ind in file_dict.items():
-        print 'operations on ' + data_file
+        #print 'operations on ' + data_file
         load_path = create_path(load_folder,data_file, '')
 
         #gets dict of dataframes
@@ -171,7 +176,7 @@ def append_groups(time_dict,table_path,chimerism):
 def write_to_excel(time_dict,save_path):
     #save data to file
     create_save_folder(save_folder)
-    save_path = create_path(save_folder,save_file,' Time course ')
+    save_path = create_path(save_folder,save_file,'')
     writer = pd.ExcelWriter(save_path,engine='xlsxwriter')
 
     for sheet, time_df in time_dict.items():
@@ -203,6 +208,7 @@ if __name__ == "__main__":
 
     #sort file dictionary by given time unit
     file_dict = sort_time(file_dict,time_unit)
+
     # iterate through file to create sheet names
     df = get_df_dict(load_folder,files[0])
     sheet_list = get_sheet_names(file_dict,df)
