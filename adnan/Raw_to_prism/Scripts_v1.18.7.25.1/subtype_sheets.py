@@ -30,7 +30,7 @@ table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
 ################################################################################
 # Secondary Variables
-sub_folder = 'IL10KO'
+sub_folder = ''
 load_folder = 'Calculated for Prism'
 save_folder = 'Transposed Calculated for Prism'
 
@@ -137,6 +137,8 @@ def save_to_excel(writer):
         column_width = 14
         columns = 'B:BB'
         worksheet_gp_paste.set_column(columns, column_width, cell_format)
+
+
     writer.save()
 
 

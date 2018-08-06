@@ -51,6 +51,7 @@ def create_all_df(df_src):
     for i in cell_type:
         df_dest[i] = df_src[i]
         df_dest["% " + i] = (df_src[i] * 100.0)/ df_src["Alive"]
+        df_dest["% " + i].fillna(0,inplace = True)
     return df_dest
 
 def create_subtype_df(df_src):
@@ -60,6 +61,7 @@ def create_subtype_df(df_src):
         for j in subtypes:
             df_dest[i + j] =  df_src[i+j]
             df_dest["% " + i + j] =  (df_src[i+j] * 100.0) / df_dest[i]
+            df_dest["% " + i + j].fillna(0,inplace = True)
     return df_dest
 
 def create_gp_paste_df(all_df, subtype_df):
@@ -68,6 +70,7 @@ def create_gp_paste_df(all_df, subtype_df):
         df_dest[i] = all_df["% " + i]
         for j in subtypes:
             df_dest[i+j] = subtype_df["% " + i + j]
+            df_dest[i+j].fillna(0, inplace = True)
     return df_dest
 
 def create_dfs(df):

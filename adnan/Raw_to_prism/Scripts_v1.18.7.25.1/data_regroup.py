@@ -5,7 +5,7 @@ Directory structure::
         Data
         Table
         Scripts_<version_identifier>
-        
+
 Primary Variables - Will be modified most often
     data_file - raw data file to be operated on
     data_folder - contains the file(s) of raw data to be operated on
@@ -20,7 +20,7 @@ Secondary Variables - Modify at user discretion,
 '''
 ################################################################################
 # Primary Variables
-data_file = 'IL10KO 1.0 4mo RAW.xls'
+data_file = 'IL10KO 1.0 2mo RAW.xls'
 data_folder = 'Data'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
@@ -36,6 +36,7 @@ import math
 import os
 import sys
 import re
+from itertools import cycle
 
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
@@ -73,7 +74,7 @@ def add_group_mapping(df,order):
 
 #extract specimen # from index and adds as row
 def get_regex():
-    return r"M[0-9]+"
+    return r"[Mm][0-9]+"
 
 def add_specimen_mapping(df):
     temp = []
@@ -135,7 +136,6 @@ def save_to_excel(path,df_RAW):
     worksheet_RAW = writer.sheets['Sheet1']
 
     cell_format = workbook.add_format({'align':'right',
-
                                        'font':'Arial',
                                        'font_size' : 10})
     label_width = 40
@@ -146,6 +146,39 @@ def save_to_excel(path,df_RAW):
     columns = 'B:BB'
     worksheet_RAW.set_column(columns, column_width, cell_format)
 
+    #insert blanks
+    curr_group = df_RAW.iloc[0]['group']
+    colors = ['#AED6F1','#A3E4D7','#F9E79F','#D7BDE2','#B1F5CA']
+    color_cycle = cycle(colors)
+    curr_color = next(color_cycle)
+
+    ungrouped_format = workbook.add_format({'align':'right',
+                                            'font':'Arial',
+                                            'font_size' : 10,
+                                            'fg_color' : '#CD6155'})
+    format_list = []
+    for i in colors:
+        format_list.append(workbook.add_format({'align':'right',
+                                            'font':'Arial',
+                                            'font_size' : 10,
+                                            # 'pattern' : 2,
+                                            'fg_color' : curr_color}))
+        curr_color = next(color_cycle)
+
+    format_cycle = cycle(format_list)
+    curr_format = next(format_cycle)
+
+    for row in range(len(df_RAW.index)):
+        if curr_group == df_RAW.iloc[row]['group']:
+            worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
+        elif curr_group == 'ungrouped':
+            curr_format = ungrouped_format
+            worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
+        else:
+            curr_group = df_RAW.iloc[row]['group']
+            curr_format = next(format_cycle)
+            worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
+    worksheet_RAW.hide_gridlines(0)
     writer.save()
 
 def get_grouped_data(df_RAW,df_table):

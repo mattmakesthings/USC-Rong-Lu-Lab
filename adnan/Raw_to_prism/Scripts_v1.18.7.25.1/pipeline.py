@@ -39,10 +39,7 @@ save_folder_dr = 'Rearranged Data'
 save_folder_ap = 'Calculated for Prism'
 save_folder_ss = 'Transposed Calculated for Prism'
 
-
-
 import os
-
 import data_regroup as dr
 import append_percent as ap
 import subtype_sheets as ss
