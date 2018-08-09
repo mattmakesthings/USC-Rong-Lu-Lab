@@ -13,6 +13,7 @@ Primary Variables - Will be modified most often
     data_folder - contains the file(s) of raw data to be operated on
     table_file - Groups specimens according to column within table
     table_folder - contains table_file
+    time_unit - this is unit of time that is expressed in the filename of your data
 
 Secondary Variables - Modify at user discretion, mainly names of folders to be created
     sub_folder - Use if multiple groups of data will be contained within the data_folder
@@ -32,17 +33,25 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 data_folder = 'Data'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
+time_unit = 'mo'
 ################################################################################
 # Secondary Variables
 sub_folder = ''
 save_folder_dr = 'Rearranged Data'
 save_folder_ap = 'Calculated for Prism'
 save_folder_ss = 'Transposed Calculated for Prism'
+save_folder_tc = 'Time course for Prism'
+file_marker_tc = 'Time Course '
+
+graphpad_paste_folder_ss = 'Graph Pad Transposed'
+chimerism_folder_ss = 'Chimerism vs. All'
+################################################################################
 
 import os
 import data_regroup as dr
 import append_percent as ap
 import subtype_sheets as ss
+import time_course as tc
 
 #versioning scheme
 #major_version.year.month.day.release_of_day
@@ -53,18 +62,24 @@ data_folder = os.path.join(data_folder,sub_folder)
 save_folder_dr = os.path.join(save_folder_dr,sub_folder)
 save_folder_ap = os.path.join(save_folder_ap,sub_folder)
 save_folder_ss = os.path.join(save_folder_ss,sub_folder)
+save_folder_tc = os.path.join(save_folder_tc,sub_folder)
 
 data_folder = dr.prepend_folder(data_folder)
 table_folder = dr.prepend_folder(table_folder)
 save_folder_dr = dr.prepend_folder(save_folder_dr)
 save_folder_ap = dr.prepend_folder(save_folder_ap)
 save_folder_ss = dr.prepend_folder(save_folder_ss)
+save_folder_tc = dr.prepend_folder(save_folder_tc)
+
+#folders to store output from subtype sheets (ss) script
+save_folder_ss_cva = os.path.join(save_folder_ss,chimerism_folder_ss)
+save_folder_ss_gp = os.path.join(save_folder_ss,graphpad_paste_folder_ss)
 
 table_path = os.path.join(table_folder,table_file)
 
 #max length of subgroups
-ss.chimerism = 10
-chimerism = ss.chimerism
+ss.specimen_limit = 10
+specimen_limit = ss.specimen_limit
 if __name__ == "__main__":
 
     for data_file in os.listdir(data_folder):
@@ -97,17 +112,54 @@ if __name__ == "__main__":
             load_path_ss = save_path
             gp_paste_df = ss.load_excel(load_path_ss,'GraphPad Paste')
             df_table = dr.load_data(table_path)
-            save_path = dr.create_path(save_folder_ss,data_file,' Graph Pad Transposed ')
+            save_path = dr.create_path(save_folder_ss_gp,data_file,' Graph Pad Transposed ')
             writer = ss.create_cell_sheets(gp_paste_df,df_table,save_path)
-            dr.create_save_folder(save_folder_ss)
+            dr.create_save_folder(save_folder_ss_gp)
             ss.save_to_excel(writer)
 
             #load data into pandas dataframe
             gp_paste_df = ss.load_excel(load_path_ss,'chimerism vs. all')
             df_table = dr.load_data(table_path)
-
             chimerism_vs_all_filename = 'chimerism vs. all ' + data_file
-            save_path = dr.create_path(save_folder_ss,chimerism_vs_all_filename,' Graph Pad Transposed ')
+            save_path = dr.create_path(save_folder_ss_cva,chimerism_vs_all_filename,' Graph Pad Transposed ')
             writer = ss.create_cell_sheets(gp_paste_df,df_table,save_path)
-            dr.create_save_folder(save_folder_ss)
+            dr.create_save_folder(save_folder_ss_cva)
             ss.save_to_excel(writer)
+
+    #time course
+    folderlist = {save_folder_ss_gp : graphpad_paste_folder_ss
+                 ,save_folder_ss_cva : chimerism_folder_ss}
+    for folder, partial_filename in folderlist.iteritems():
+        print partial_filename
+        files = tc.get_files(folder)
+        files = tc.remove_non_excel(files)
+        file_dict = tc.files_to_dict(files)
+        file_dict = tc.insert_time(file_dict,time_unit)
+
+        #sort file dictionary by given time unit
+        file_dict = tc.sort_time(file_dict,time_unit)
+
+        # iterate through file to create sheet names
+        df = tc.get_df_dict(folder,files[0])
+        sheet_list = tc.get_sheet_names(file_dict,df)
+
+        #create list that contain filtered specimen names
+        df_col_r = tc.get_specimen_names(df,sheet_list)
+        df_list = tc.list_of_df(len(sheet_list),df_col_r, file_dict.values())
+
+        #create ordered dict to tie sheetnames to dataframes
+        time_dict = tc.ordered_dict_from_lists(sheet_list,df_list)
+
+        #fill time_dict with data from files
+        time_dict = tc.fill_time_dict(file_dict,folder,time_dict,df_col_r)
+        table_folder = dr.prepend_folder(table_folder)
+        table_path = os.path.join(table_folder,table_file)
+
+        #add the group row
+        time_dict = tc.append_groups(time_dict,table_path,specimen_limit)
+
+        #save
+        save_file = file_marker_tc + partial_filename + '.xlsx'
+        save_path = os.path.join(save_folder_tc,save_file)
+        print save_path
+        tc.write_to_excel(time_dict,save_path)

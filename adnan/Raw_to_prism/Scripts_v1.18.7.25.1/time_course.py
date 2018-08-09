@@ -90,9 +90,7 @@ def get_sheet_names(file_dict,df):
 
 
 def get_specimen_names(df,sheet_list):
-    print sheet_list[0]
-    sheet =  sheet_list[0]
-    df_col = df[sheet].columns
+    df_col = df.itervalues().next().columns
     df_col_r = []
     for i in df_col:
         m = re.search(get_regex(),i)
@@ -165,12 +163,11 @@ def append_groups(time_dict,table_path,specimen_limit):
         for x in range(specimen_limit - 1):
             group_row.append('')
 
-    group_row = group_row[:-(len(group_row)- len(df_col_r))]
-    # group_df = pd.DataFrame()
-    # group_df = group_df.append(pd.Series(group_row,index = df_col_r), ignore_index = True)
+
 
     for sheet, time_df in time_dict.items():
-        time_df.loc[-1] = pd.Series(group_row,index = df_col_r)
+        group_row_cp = group_row[:-(len(group_row)- len(time_df.columns))]
+        time_df.loc[-1] = pd.Series(group_row_cp,index = time_df.columns)
         # time_df = time.sort_index
         # time_df.index = time_df['temp_ind']
     return time_dict
@@ -178,7 +175,7 @@ def append_groups(time_dict,table_path,specimen_limit):
 def write_to_excel(time_dict,save_path):
     #save data to file
     create_save_folder(save_folder)
-    save_path = create_path(save_folder,save_file,'')
+    # save_path = create_path(save_folder,save_file,'')
     writer = pd.ExcelWriter(save_path,engine='xlsxwriter')
 
     for sheet, time_df in time_dict.items():
@@ -204,7 +201,7 @@ def write_to_excel(time_dict,save_path):
 if __name__ == "__main__":
 
     files = get_files(load_folder)
-    files = remove_non_excel(files)
+    files = remove_non_excel(files,)
     file_dict = files_to_dict(files)
     file_dict = insert_time(file_dict,time_unit)
 

@@ -99,7 +99,6 @@ def transform(src_df,sheet_name,df_table):
 
 def load_excel(path,sheet):
     xls_file = pd.ExcelFile(path)
-    print list(xls_file.sheet_names)
     return xls_file.parse(sheet)
 
 def subgroups_from_table(df_table):
@@ -135,7 +134,6 @@ def save_to_excel(writer):
         column_width = 14
         columns = 'B:BB'
         worksheet_gp_paste.set_column(columns, column_width, cell_format)
-
 
     writer.save()
 
