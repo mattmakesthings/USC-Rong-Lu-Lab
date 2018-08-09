@@ -1,8 +1,9 @@
 # this script combines multiple files to compare
 # specimens over time
 # IMPORTANT:
-#       relies on results of either the pipeline script or the subtype_sheets script
-#       set the specimen_limit var to be equal to the value of the script used above
+#      1 relies on results of either the pipeline script or the subtype_sheets script
+#      2 set the specimen_limit var to be equal to the value of the script used above
+
 
 '''
 specimen_limit - this is the size limit of each group from the table file,
