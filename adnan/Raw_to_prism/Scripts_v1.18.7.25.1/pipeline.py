@@ -30,7 +30,7 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 ################################################################################
 # Primary Variables
 data_folder = 'Data'
-table_file = 'HSC-CLP 2.0 Table.xlsx'
+table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
 ################################################################################
 # Secondary Variables
@@ -87,17 +87,27 @@ if __name__ == "__main__":
 
         #append percent
             rearranged_df = ap.load_data(save_path)
-            all_df , subtype_df , gp_paste_df = ap.create_dfs(rearranged_df)
-
+            all_df , subtype_df , gp_paste_df, subtype_all_df = ap.create_dfs(rearranged_df)
             dr.create_save_folder(save_folder_ap)
             save_path = ap.create_path(save_folder_ap,data_file,' GraphPad ')
-            ap.save_to_excel(save_path,all_df,rearranged_df,subtype_df,gp_paste_df)
+            ap.save_to_excel(save_path,all_df,rearranged_df,subtype_df,gp_paste_df, subtype_all_df)
 
         #subtype_sheets
             #load data into pandas dataframe
-            gp_paste_df = ss.load_excel(save_path)
+            load_path_ss = save_path
+            gp_paste_df = ss.load_excel(load_path_ss,'GraphPad Paste')
             df_table = dr.load_data(table_path)
             save_path = dr.create_path(save_folder_ss,data_file,' Graph Pad Transposed ')
+            writer = ss.create_cell_sheets(gp_paste_df,df_table,save_path)
+            dr.create_save_folder(save_folder_ss)
+            ss.save_to_excel(writer)
+
+            #load data into pandas dataframe
+            gp_paste_df = ss.load_excel(load_path_ss,'chimerism vs. all')
+            df_table = dr.load_data(table_path)
+
+            chimerism_vs_all_filename = 'chimerism vs. all ' + data_file
+            save_path = dr.create_path(save_folder_ss,chimerism_vs_all_filename,' Graph Pad Transposed ')
             writer = ss.create_cell_sheets(gp_paste_df,df_table,save_path)
             dr.create_save_folder(save_folder_ss)
             ss.save_to_excel(writer)

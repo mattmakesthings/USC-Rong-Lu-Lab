@@ -2,9 +2,11 @@
 # specimens over time
 # IMPORTANT:
 #       relies on results of either the pipeline script or the subtype_sheets script
-#       set the chimerism var to be equal to the value of the script used above
+#       set the specimen_limit var to be equal to the value of the script used above
 
 '''
+specimen_limit - this is the size limit of each group from the table file,
+            make larger if an error is thrown.
 time unit -> time unit used in input file names
 
 sub_folder -> this is the folder in the load folder that contains the data
@@ -22,7 +24,7 @@ table_file -> used when creating the initial data
 table_folder -> contains the table_file
 '''
 ##################################################################
-chimerism = 10
+specimen_limit = 10
 time_unit = "mo"
 sub_folder = ''
 load_folder = 'Transposed Calculated for Prism'
@@ -154,13 +156,13 @@ def fill_time_dict(file_dict,load_folder,time_dict,df_col_r):
                                 time_df.loc[ind][spec_name] = val
     return time_dict
 
-def append_groups(time_dict,table_path,chimerism):
+def append_groups(time_dict,table_path,specimen_limit):
     #insert row with group names
     df_table = load_data(table_path)
     group_row = []
     for col_name in df_table.columns:
         group_row.append(col_name)
-        for x in range(chimerism - 1):
+        for x in range(specimen_limit - 1):
             group_row.append('')
 
     group_row = group_row[:-(len(group_row)- len(df_col_r))]
@@ -226,6 +228,6 @@ if __name__ == "__main__":
     table_path = os.path.join(table_folder,table_file)
 
     #add the group row
-    time_dict = append_groups(time_dict,table_path,chimerism)
+    time_dict = append_groups(time_dict,table_path,specimen_limit)
     save_path = os.path.join(save_folder,save_file)
     write_to_excel(time_dict,save_path)

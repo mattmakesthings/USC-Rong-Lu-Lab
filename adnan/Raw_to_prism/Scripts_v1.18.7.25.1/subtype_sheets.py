@@ -9,7 +9,7 @@ Directory structure::
         Scripts_<version_identifier>
 
 Primary Variables - Will be modified most often
-    chimerism - this is the size limit of each group from the table file,
+    specimen_limit - this is the size limit of each group from the table file,
                 make larger if an error is thrown.
     data_file - raw data file to be operated on
     table_file - Groups specimens according to column within table
@@ -24,7 +24,7 @@ Secondary Variables - Modify at user discretion,
 '''
 ################################################################################
 # Primary Variables
-chimerism = 10
+specimen_limit = 10
 data_file = 'IL10KO 1.0 4mo RAW.xls'
 table_file = 'IL10KO 1.0 Table 01.xlsx'
 table_folder = 'Table'
@@ -33,10 +33,7 @@ table_folder = 'Table'
 sub_folder = ''
 load_folder = 'Calculated for Prism'
 save_folder = 'Transposed Calculated for Prism'
-
-
-
-#script to group specimen data
+################################################################################
 import pandas as pd
 import numpy as np
 import os
@@ -86,23 +83,24 @@ def transform(src_df,sheet_name,df_table):
     for k,v in subgroups.items():
         cp_df = cp_df.append(dest_df[dest_df['group']==k],ignore_index = False)
 
-        if chimerism - v < 0:
+        if specimen_limit - v < 0:
             if k == 'ungrouped':
-                print ("Warning: ungrouped has more values than chimerism ")
+                print ("Warning: ungrouped has more values than specimen_limit ")
             else:
-                print ("ERROR - chimerism overflow: " + k + " has too many values")
+                print ("ERROR - specimen_limit overflow: " + k + " has too many values")
                 quit()
 
-        #add empty rows for the gap between limit and chimerisms
-        for i in range(chimerism - v):
+        #add empty rows for the gap between limit and specimen_limits
+        for i in range(specimen_limit - v):
             cp_df = cp_df.append(empty_row)
 
     #transform dataframe
     return cp_df.T
 
-def load_excel(path):
+def load_excel(path,sheet):
     xls_file = pd.ExcelFile(path)
-    return xls_file.parse('GraphPad Paste')
+    print list(xls_file.sheet_names)
+    return xls_file.parse(sheet)
 
 def subgroups_from_table(df_table):
     subgroups = col_to_dict(df_table)
@@ -155,8 +153,8 @@ if __name__ == "__main__":
     save_path = create_path(save_folder,data_file,' GraphPad Transposed ')
 
 
-    gp_paste_df = load_excel(load_path)
+    df_res = load_excel(load_path,'GraphPad Paste')
     df_table = load_table(table_path)
-    writer = create_cell_sheets(gp_paste_df,df_table,save_path)
+    writer = create_cell_sheets(df_res,df_table,save_path)
     create_save_folder(save_folder)
     save_to_excel(writer)
