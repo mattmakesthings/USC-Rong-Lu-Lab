@@ -32,6 +32,13 @@ def drop_unnamed_cols(df):
 def get_group_names(df):
     return df.loc[-1].unique()
 #take dataframe return dictionary of 3 arrays
+def get_time_unit(df):
+    # get x values
+    x = list(df.index)
+    #remove group index
+    reg = re.sub('[\d]+',"",str(x[0]))
+    return reg
+
 def get_x_pts(df):
     # get x values
     x = list(df.index)
@@ -91,82 +98,83 @@ def generate_data_pts(df):
     err = get_err(df)
     return x,y,err
 
-type_list = get_group_names(all_df['Granulocytes'])
-list_of_dict = []
+dict_of_sheets = OrderedDict()
+for sheet in all_df.keys():
+    dict_of_sheets[sheet] = {'label' : sheet, 'value' : sheet}
 
+type_list = get_group_names(all_df['Granulocytes'])
+dict_of_groups = OrderedDict()
 for t in type_list:
-    list_of_dict.append({'label' : str(t), 'value' : str(t)})
+    dict_of_groups[t] = {'label' : str(t), 'value' : str(t)}
+
 
 all_pts = dict.fromkeys(all_df)
 for k in all_df.keys():
     x_list, y_dict, err_dict = generate_data_pts(all_df[k])
     all_pts[k] = {'y':y_dict,'err':err_dict}
 
+print all_pts.keys()
 
+unit_time = get_time_unit(all_df['Granulocytes'])
 
 app.layout = html.Div(children = [
 
     #sheet dropdown
     dcc.Dropdown(
-        options=[
-            {'label': 'New York City', 'value': 'NYC'},
-            {'label': 'Montreal', 'value': 'MTL'},
-            {'label': 'San Francisco', 'value': 'SF'}
-        ],
-        multi=True,
-        value=["MTL","SF"]
+        id = "sheet dropdown",
+        options=dict_of_sheets.values(),
+        multi=False,
+        value = dict_of_sheets.keys()[0],
+        clearable = False
+
     ),
 
     #group dropdown
     dcc.Dropdown(
         id = 'group dropdown',
-        options=list_of_dict,
+        options=dict_of_groups.values(),
         multi=True,
-        value=type_list
+        value=dict_of_groups.keys(),
+        clearable = False
     ),
 
 
     dcc.Graph(
         id = 'scatter1',
-        figure = go.Figure(
-            data = [
-                       go.Scatter(x=x_list,
-                                  y=y_dict['KO'],
-                                  error_y=dict(
-                                        type='data',
-                                        array=err_dict['KO'],
-                                        visible=True
-                                        )
-                                 )
-                     ]
-                 )
         )
 ])
 
 @app.callback(
     dash.dependencies.Output('scatter1','figure'),
-    [dash.dependencies.Input('group dropdown','value')])
-def update_scatter(groups):
-    hold_val = 'Granulocytes'
+    [dash.dependencies.Input('group dropdown','value'),
+     dash.dependencies.Input('sheet dropdown', 'value')])
+def update_scatter(groups,sheet):
+    hold_val = sheet
     traces = []
     for g in groups:
-        print all_pts[hold_val]['y']
         traces.append(
             go.Scatter(x=x_list,
                        y=all_pts[hold_val]['y'][g],
                        error_y=dict(
                              type='data',
-                             array=all_pts[hold_val]['err'],
+                             array=all_pts[hold_val]['err'][g],
                              visible=True
                              ),
                         name = g
-
                       )
         )
 
 
     return {
-        'data' : traces
+        'data' : traces,
+        'layout' : go.Layout(
+            xaxis = {
+                'title' : 'Time (' + unit_time + ')'
+            },
+            yaxis = {
+                'title' : 'to be added'
+            }
+        )
     }
 
 
