@@ -160,9 +160,10 @@ def append_groups(time_dict,table_path,specimen_limit):
     df_table = load_data(table_path)
     group_row = []
     for col_name in df_table.columns:
-        group_row.append(col_name)
-        for x in range(specimen_limit - 1):
-            group_row.append('')
+        group_row.extend([col_name]*specimen_limit)
+        # group_row.append(col_name)
+        # for x in range(specimen_limit - 1):
+        #     group_row.append('')
 
 
 
