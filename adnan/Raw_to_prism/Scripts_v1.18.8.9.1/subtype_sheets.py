@@ -9,8 +9,8 @@ Directory structure::
         Scripts_<version_identifier>
 
 Primary Variables - Will be modified most often
-    specimen_limit - this is the size limit of each group from the table file,
-                make larger if an error is thrown.
+    specimen_limit - this is the size limit of each group from the table file.
+                     if set to 0, specimen_limit will be determined from table_file
     data_file - raw data file to be operated on
     table_file - Groups specimens according to column within table
     table_folder - contains table_file
@@ -24,9 +24,9 @@ Secondary Variables - Modify at user discretion,
 '''
 ################################################################################
 # Primary Variables
-specimen_limit = 10
-data_file = 'IL10KO 1.0 4mo RAW.xls'
-table_file = 'IL10KO 1.0 Table 01.xlsx'
+specimen_limit = 0
+data_file = 'CLP 2.0 60d RAW.xls'
+table_file = 'HSC-CLP 2.0 Table.xlsx'
 table_folder = 'Table'
 ################################################################################
 # Secondary Variables
@@ -116,6 +116,15 @@ def create_cell_sheets(gp_paste_df,df_table,path):
         gran_df.to_excel(writer,sheet_name=name)
     return writer
 
+def get_specimen_limit(df_table,specimen_limit):
+    table_length = len(df_table.index)
+    if specimen_limit == 0:
+        specimen_limit = table_length
+    else:
+        if table_length > specimen_limit:
+            print "specimen limit is shorter than longest group. Continuing"
+    return specimen_limit
+
 def save_to_excel(writer):
     #cell_format excel sheets
     workbook = writer.book
@@ -153,6 +162,7 @@ if __name__ == "__main__":
 
     df_res = load_excel(load_path,'GraphPad Paste')
     df_table = load_table(table_path)
+    specimen_limit = get_specimen_limit(df_table,specimen_limit)
     writer = create_cell_sheets(df_res,df_table,save_path)
     create_save_folder(save_folder)
     save_to_excel(writer)

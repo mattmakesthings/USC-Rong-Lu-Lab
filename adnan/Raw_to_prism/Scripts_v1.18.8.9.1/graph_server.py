@@ -1,3 +1,28 @@
+#! /usr/bin/python2.7
+
+#this script launches a web server to display the output of the time_course script
+'''
+data_folder - Contains the output from the time_course script
+table_folder - contains our outlier table, among other things
+outlier_file - this file contains outliers that should be ignored
+               for graphing purposes
+filename - the specific file to be displayed
+'''
+
+### NEED TO FIX
+'''
+    If the outlier file contains an entire group,
+    the graph will not load until that group is removed from the dropdown menu
+'''
+
+################################################################################
+# Primary Variables
+data_folder = 'Time course for Prism'
+table_folder = 'Table'
+outlier_file = 'Outliers.xlsx'
+filename = 'Time Course Graph Pad Transposed.xlsx'
+################################################################################
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -7,31 +32,26 @@ import os
 import re
 from collections import OrderedDict
 import pandas as pd
-import time_course as tc
 
-app = dash.Dash()
-
-#load data before processing
-print 'loading time course data'
-data_folder = tc.save_folder
-if data_folder is None:
-    data_folder = 'Time course for Prism'
-    if not os.direxists(os.path.join(os.getcwd(), data_folder)):
-        raise TypeError("data_folder var has been changed in time course script and hardcoded value doesn't match anything in directory.")
-
-data_folder = os.path.join(os.getcwd(),data_folder)
-
-for filename in os.listdir(data_folder):
-    if 'Time Course Graph Pad Transposed.xlsx' in filename and '.~lock' not in filename:
-        xl = pd.ExcelFile(os.path.join(data_folder,filename))
-        all_df = pd.read_excel(xl, None)
+from data_regroup import prepend_folder, load_table
 
 def drop_unnamed_cols(df):
     return df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
 
 def get_group_names(df):
     return df.loc[-1].unique()
-#take dataframe return dictionary of 3 arrays
+
+def remove_outliers(df,outlier_path):
+    df_table = load_table(outlier_path)
+    col = df.columns
+    pattern = re.compile("\d+")
+    first_chars = pattern.sub("", col[0])
+    first_chars = first_chars[0]
+    specimens = df_table.T.values[0]
+    drop_cols = [str(first_chars) + str(specimen) for specimen in specimens]
+    df = df.drop(drop_cols, axis=1, errors='ignore')
+    return df
+
 def get_time_unit(df):
     # get x values
     x = list(df.index)
@@ -98,22 +118,40 @@ def generate_data_pts(df):
     err = get_err(df)
     return x,y,err
 
+app = dash.Dash()
+
+#load data before processing
+print 'loading time course data'
+data_folder = prepend_folder(data_folder)
+if not os.path.exists(data_folder):
+    raise TypeError("data_folder var doesn't match anything in directory.")
+
+#load datafile
+for filen in os.listdir(data_folder):
+    if filename in filen and '.~lock' not in filen:
+        xl = pd.ExcelFile(os.path.join(data_folder,filen))
+        all_df = pd.read_excel(xl, None)
+
+#load dictionary of excel sheet names
 dict_of_sheets = OrderedDict()
 for sheet in all_df.keys():
     dict_of_sheets[sheet] = {'label' : sheet, 'value' : sheet}
 
+#load dictionary of group names
 type_list = get_group_names(all_df['Granulocytes'])
 dict_of_groups = OrderedDict()
 for t in type_list:
     dict_of_groups[t] = {'label' : str(t), 'value' : str(t)}
 
+table_folder = prepend_folder(table_folder)
+outlier_path = os.path.join(table_folder,outlier_file)
 
+#create dataframes for graphs and remove specimens
 all_pts = dict.fromkeys(all_df)
 for k in all_df.keys():
+    all_df[k] = remove_outliers(all_df[k],outlier_path)
     x_list, y_dict, err_dict = generate_data_pts(all_df[k])
     all_pts[k] = {'y':y_dict,'err':err_dict}
-
-print all_pts.keys()
 
 unit_time = get_time_unit(all_df['Granulocytes'])
 

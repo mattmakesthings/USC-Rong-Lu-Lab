@@ -14,6 +14,8 @@ Primary Variables - Will be modified most often
     table_file - Groups specimens according to column within table
     table_folder - contains table_file
     time_unit - this is unit of time that is expressed in the filename of your data
+    specimen_limit - this is the size limit of each group from the table file.
+                     if set to 0, specimen_limit will be determined from table_files
 
 Secondary Variables - Modify at user discretion, mainly names of folders to be created
     sub_folder - Use if multiple groups of data will be contained within the data_folder
@@ -31,20 +33,23 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 ################################################################################
 # Primary Variables
 data_folder = 'Data'
-table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+outlier_file = 'Outliers.xlsx'
 table_folder = 'Table'
-time_unit = 'mo'
+time_unit = 'd'
+specimen_limit = 0
 ################################################################################
 # Secondary Variables
 sub_folder = ''
 save_folder_dr = 'Rearranged Data'
 save_folder_ap = 'Calculated for Prism'
-save_folder_ss = 'Transposed Calculated for Prism'
-save_folder_tc = 'Time course for Prism'
-file_marker_tc = 'Time Course '
 
+save_folder_ss = 'Transposed Calculated for Prism'
 graphpad_paste_folder_ss = 'Graph Pad Transposed'
 chimerism_folder_ss = 'Chimerism vs. All'
+
+save_folder_tc = 'Time course for Prism'
+file_marker_tc = 'Time Course '
 ################################################################################
 
 import os
@@ -77,9 +82,13 @@ save_folder_ss_gp = os.path.join(save_folder_ss,graphpad_paste_folder_ss)
 
 table_path = os.path.join(table_folder,table_file)
 
-#max length of subgroups
-ss.specimen_limit = 10
-specimen_limit = ss.specimen_limit
+
+table_path = os.path.join(table_folder,table_file)
+df_table = dr.load_table(table_path)
+specimen_limit = ss.get_specimen_limit(df_table,specimen_limit)
+ss.specimen_limit = specimen_limit
+
+
 if __name__ == "__main__":
 
     for data_file in os.listdir(data_folder):
@@ -89,9 +98,6 @@ if __name__ == "__main__":
             # load data into pandas dataframe
             data_path = os.path.join(data_folder,data_file)
             df_RAW = dr.load_data(data_path)
-            # load table data into dataframe
-            table_path = os.path.join(table_folder,table_file)
-            df_table = dr.load_table(table_path)
             # group data
             df_RAW = dr.get_grouped_data(df_RAW,df_table)
 
@@ -112,6 +118,7 @@ if __name__ == "__main__":
             load_path_ss = save_path
             gp_paste_df = ss.load_excel(load_path_ss,'GraphPad Paste')
             df_table = dr.load_data(table_path)
+
             save_path = dr.create_path(save_folder_ss_gp,data_file,' Graph Pad Transposed ')
             writer = ss.create_cell_sheets(gp_paste_df,df_table,save_path)
             dr.create_save_folder(save_folder_ss_gp)
@@ -158,8 +165,11 @@ if __name__ == "__main__":
         #add the group row
         time_dict = tc.append_groups(time_dict,table_path,specimen_limit)
 
+        #create outlier file
+        outlier_path = os.path.join(table_folder,outlier_file)
+        tc.create_empty_outlier_table(outlier_path)
+
         #save
         save_file = file_marker_tc + partial_filename + '.xlsx'
         save_path = os.path.join(save_folder_tc,save_file)
-        print save_path
         tc.write_to_excel(time_dict,save_path)

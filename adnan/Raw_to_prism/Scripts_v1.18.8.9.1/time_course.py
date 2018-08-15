@@ -26,12 +26,13 @@ table_folder -> contains the table_file
 '''
 ##################################################################
 specimen_limit = 10
-time_unit = "mo"
+time_unit = "d"
 sub_folder = ''
 load_folder = 'Transposed Calculated for Prism'
 save_file = 'Time Course.xlsx'
 save_folder = 'Time course for Prism'
-table_file = 'IL10KO 1.0 Table 01.xlsx'
+table_file = 'HSC-CLP 2.0 Table.xlsx'
+outlier_file = 'Outliers.xlsx'
 table_folder = 'Table'
 ##################################################################
 
@@ -41,6 +42,7 @@ import re
 from data_regroup import load_data, prepend_folder, create_path, create_save_folder, get_regex
 from collections import OrderedDict
 import operator
+import xlsxwriter
 
 load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
@@ -62,13 +64,13 @@ def remove_non_excel(files):
             ret.append(f)
     return ret
 
-def insert_time(file_dict,time_unit):
+def insert_time(file_dict,time_unit_loc):
     for k,v in file_dict.items():
-        m = re.search(r"[0-9]+" + re.escape(time_unit), k)
+        m = re.search(r"[0-9]+" + re.escape(time_unit_loc), k)
         if m == None:
             raise AttributeError('var time_unit doesn\'t match files')
 
-        s = m.group(0).replace(time_unit,'')
+        s = m.group(0).replace(time_unit_loc,'')
         file_dict[k] = int(s)
     return file_dict
 
@@ -168,11 +170,37 @@ def append_groups(time_dict,table_path,specimen_limit):
 
 
     for sheet, time_df in time_dict.items():
-        group_row_cp = group_row[:-(len(group_row)- len(time_df.columns))]
+        print sheet
+        offset = -(len(group_row)- len(time_df.columns))
+        if offset == 0:
+            offset = None
+
+        group_row_cp = group_row[:offset]
+        print group_row
+        print group_row_cp
+        print len(time_df.columns)
+        print len(group_row)
         time_df.loc[-1] = pd.Series(group_row_cp,index = time_df.columns)
+        print '**'
         # time_df = time.sort_index
         # time_df.index = time_df['temp_ind']
     return time_dict
+
+def create_empty_outlier_table(save_path):
+    workbook = xlsxwriter.Workbook(save_path)
+    worksheet = workbook.add_worksheet()
+    cell_format = workbook.add_format({'align':'right',
+                                        'bold' : 'True',
+                                       'font':'Arial',
+                                       'font_size' : 10})
+    label = 'A:A'
+    column_width = 18
+    row = 0
+    col = 0
+    worksheet.write(row,col,'Outlier Specimens')
+    worksheet.set_column(label,column_width,cell_format)
+    workbook.close()
+
 
 def write_to_excel(time_dict,save_path):
     #save data to file
@@ -225,6 +253,10 @@ if __name__ == "__main__":
     time_dict = fill_time_dict(file_dict,load_folder,time_dict,df_col_r)
     table_folder = prepend_folder(table_folder)
     table_path = os.path.join(table_folder,table_file)
+
+    #create outlier file
+    outlier_path = os.path.join(table_folder,outlier_file)
+    create_empty_outlier_table(outlier_path)
 
     #add the group row
     time_dict = append_groups(time_dict,table_path,specimen_limit)

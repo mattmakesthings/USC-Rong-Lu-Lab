@@ -179,7 +179,7 @@ def save_to_excel(path,df_RAW):
             else:
                 curr_format = next(format_cycle)
             worksheet_RAW.set_row(row+1,':',cell_format=curr_format)
-    
+
     writer.save()
 
 def get_grouped_data(df_RAW,df_table):
