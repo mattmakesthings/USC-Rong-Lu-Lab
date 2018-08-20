@@ -1,3 +1,5 @@
+#!/usr/bin/python2.7
+
 # this script combines multiple files to compare
 # specimens over time
 # IMPORTANT:
@@ -22,7 +24,10 @@ does not already exist
 
 table_file -> used when creating the initial data
 
-table_folder -> contains the table_file
+outlier_file -> created with this script. Used to filter out
+                data for graphing.
+
+table_folder -> contains the table_file and outlier_file
 '''
 ##################################################################
 specimen_limit = 10
@@ -32,7 +37,7 @@ load_folder = 'Transposed Calculated for Prism'
 save_file = 'Time Course.xlsx'
 save_folder = 'Time course for Prism'
 table_file = 'HSC-CLP 2.0 Table.xlsx'
-outlier_file = 'Outliers.xlsx'
+outlier_file = 'Outliers and Warnings.xlsx'
 table_folder = 'Table'
 ##################################################################
 
@@ -49,7 +54,15 @@ save_folder = prepend_folder(save_folder)
 load_folder = os.path.join(load_folder,sub_folder)
 
 def get_files(folder_):
-    return os.listdir(folder_)
+    file_list = os.listdir(folder_)
+    def atoi(text):
+        return int(text) if text.isdigit() else text
+
+    def natural_keys(text):
+        return [ atoi(c) for c in re.split('(\d+)', text) ]
+    file_list.sort(key=natural_keys)
+
+    return file_list
 
 def files_to_dict(files):
     return OrderedDict(zip(files,[0]*len(files)))
@@ -167,21 +180,13 @@ def append_groups(time_dict,table_path,specimen_limit):
         # for x in range(specimen_limit - 1):
         #     group_row.append('')
 
-
-
     for sheet, time_df in time_dict.items():
-        print sheet
         offset = -(len(group_row)- len(time_df.columns))
         if offset == 0:
             offset = None
 
         group_row_cp = group_row[:offset]
-        print group_row
-        print group_row_cp
-        print len(time_df.columns)
-        print len(group_row)
         time_df.loc[-1] = pd.Series(group_row_cp,index = time_df.columns)
-        print '**'
         # time_df = time.sort_index
         # time_df.index = time_df['temp_ind']
     return time_dict
@@ -193,11 +198,12 @@ def create_empty_outlier_table(save_path):
                                         'bold' : 'True',
                                        'font':'Arial',
                                        'font_size' : 10})
-    label = 'A:A'
+    label = 'A:AA'
     column_width = 18
     row = 0
     col = 0
     worksheet.write(row,col,'Outlier Specimens')
+    worksheet.write(row,col+1,'Warnings')
     worksheet.set_column(label,column_width,cell_format)
     workbook.close()
 

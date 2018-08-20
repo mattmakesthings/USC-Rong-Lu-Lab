@@ -19,7 +19,7 @@ filename - the specific file to be displayed
 # Primary Variables
 data_folder = 'Time course for Prism'
 table_folder = 'Table'
-outlier_file = 'Outliers.xlsx'
+outlier_file = 'Outliers and Warnings.xlsx'
 filename = 'Time Course Graph Pad Transposed.xlsx'
 ################################################################################
 

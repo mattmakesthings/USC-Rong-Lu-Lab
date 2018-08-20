@@ -34,7 +34,7 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 # Primary Variables
 data_folder = 'Data'
 table_file = 'HSC-CLP 2.0 Table.xlsx'
-outlier_file = 'Outliers.xlsx'
+outlier_file = 'Outliers and Warnings.xlsx'
 table_folder = 'Table'
 time_unit = 'd'
 specimen_limit = 0
