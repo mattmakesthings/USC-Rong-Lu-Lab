@@ -151,7 +151,7 @@ if __name__ == "__main__":
         sheet_list = tc.get_sheet_names(file_dict,df)
 
         #create list that contain filtered specimen names
-        df_col_r = tc.get_specimen_names(df,sheet_list)
+        df_col_r = tc.get_specimen_names(df_table)
         df_list = tc.list_of_df(len(sheet_list),df_col_r, file_dict.values())
 
         #create ordered dict to tie sheetnames to dataframes
@@ -159,8 +159,7 @@ if __name__ == "__main__":
 
         #fill time_dict with data from files
         time_dict = tc.fill_time_dict(file_dict,folder,time_dict,df_col_r)
-        table_folder = dr.prepend_folder(table_folder)
-        table_path = os.path.join(table_folder,table_file)
+
 
         #add the group row
         time_dict = tc.append_groups(time_dict,table_path,specimen_limit)

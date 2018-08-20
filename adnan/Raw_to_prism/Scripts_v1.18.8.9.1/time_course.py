@@ -104,18 +104,14 @@ def get_sheet_names(file_dict,df):
         break
     return sheet_list
 
+def get_specimen_names(df_table):
+    ret = []
+    for col in df_table:
+        ret = ret + list(df_table[col].values)
 
-def get_specimen_names(df,sheet_list):
-    df_col = df.itervalues().next().columns
-    df_col_r = []
-    for i in df_col:
-        m = re.search(get_regex(),i)
-        if m != None:
-            df_col_r.append(m.group())
-        else:
-            df_col_r.append('')
-
-    return df_col_r
+    for i in range(len(ret)):
+        ret[i] = "M" + str(ret[i])
+    return ret
 
 def list_of_df(length,col,ind):
     df_list = []

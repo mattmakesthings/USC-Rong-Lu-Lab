@@ -17,10 +17,10 @@ filename - the specific file to be displayed
 
 ################################################################################
 # Primary Variables
+filename = 'Time Course Graph Pad Transposed.xlsx'
 data_folder = 'Time course for Prism'
 table_folder = 'Table'
 outlier_file = 'Outliers and Warnings.xlsx'
-filename = 'Time Course Graph Pad Transposed.xlsx'
 ################################################################################
 
 import dash
