@@ -207,25 +207,22 @@ def create_empty_outlier_table(save_path):
 def write_to_excel(time_dict,save_path):
     #save data to file
     create_save_folder(save_folder)
-    # save_path = create_path(save_folder,save_file,'')
     writer = pd.ExcelWriter(save_path,engine='xlsxwriter')
+    workbook = writer.book
+    cell_format = workbook.add_format({'align':'right',
+                                       'font':'Arial',
+                                       'font_size' : 10})
+
+    label_width = 18
+    label = 'A:A'
+    column_width = 18
+    columns = 'B:BB'
 
     for sheet, time_df in time_dict.items():
         time_df.to_excel(writer,sheet_name = sheet)
         #formatting excel file
-        workbook = writer.book
         worksheet_RAW = writer.sheets[sheet]
-
-        cell_format = workbook.add_format({'align':'right',
-
-                                           'font':'Arial',
-                                           'font_size' : 10})
-        label_width = 40
-        label = 'A:A'
         worksheet_RAW.set_column(label, label_width, cell_format)
-
-        column_width = 18
-        columns = 'B:BB'
         worksheet_RAW.set_column(columns, column_width, cell_format)
     writer.save()
 
