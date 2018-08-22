@@ -17,10 +17,8 @@ filename - the specific file to be displayed
 
 ################################################################################
 # Primary Variables
-filename = 'Time Course Graph Pad Transposed.xlsx'
-data_folder = 'Time course for Prism'
-table_folder = 'Table'
-outlier_file = 'Outliers and Warnings.xlsx'
+file_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Time course for Prism/Time Course Graph Pad Transposed.xlsx'
+outlier_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/Outliers and Warnings.xlsx'
 ################################################################################
 
 import dash
@@ -32,6 +30,8 @@ import os
 import re
 from collections import OrderedDict
 import pandas as pd
+
+data_folder , filename = os.path.split(file_path)
 
 from data_regroup import prepend_folder, load_table
 
@@ -143,8 +143,6 @@ dict_of_groups = OrderedDict()
 for t in type_list:
     dict_of_groups[t] = {'label' : str(t), 'value' : str(t)}
 
-table_folder = prepend_folder(table_folder)
-outlier_path = os.path.join(table_folder,outlier_file)
 
 #create dataframes for graphs and remove specimens
 all_pts = dict.fromkeys(all_df)

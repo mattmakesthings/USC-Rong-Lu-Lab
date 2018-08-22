@@ -34,11 +34,11 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 # Primary Variables
 data_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Data'
 table_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
-outlier_file = 'Outliers and Warnings.xlsx'
 time_unit = 'd'
 specimen_limit = 0
 ################################################################################
 # Secondary Variables
+outlier_file = 'Outliers and Warnings.xlsx'
 sub_folder = ''
 save_folder_dr = 'Rearranged Data'
 save_folder_ap = 'Calculated for Prism'
