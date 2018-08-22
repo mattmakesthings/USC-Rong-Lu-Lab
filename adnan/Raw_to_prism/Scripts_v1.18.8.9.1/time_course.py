@@ -112,7 +112,6 @@ def get_sheet_names(file_dict,df):
 def get_specimen_names(df_table):
     ret = []
     for col in df_table:
-        print list(df_table[col].dropna().astype(int).astype(str).values)
         ret = ret + list(df_table[col].dropna().astype(int).astype(str).values)
 
     for i in range(len(ret)):
@@ -178,9 +177,7 @@ def append_groups(time_dict,table_path,specimen_limit):
     group_row = []
     for col_name in df_table.columns:
         group_row.extend([col_name]*len(df_table[col_name].dropna()))
-        # group_row.append(col_name)
-        # for x in range(specimen_limit - 1):
-        #     group_row.append('')
+
 
     for sheet, time_df in time_dict.items():
         offset = -(len(group_row)- len(time_df.columns))
@@ -194,20 +191,21 @@ def append_groups(time_dict,table_path,specimen_limit):
     return time_dict
 
 def create_empty_outlier_table(save_path):
-    workbook = xlsxwriter.Workbook(save_path)
-    worksheet = workbook.add_worksheet()
-    cell_format = workbook.add_format({'align':'right',
-                                        'bold' : 'True',
-                                       'font':'Arial',
-                                       'font_size' : 10})
-    label = 'A:AA'
-    column_width = 18
-    row = 0
-    col = 0
-    worksheet.write(row,col,'Outlier Specimens')
-    worksheet.write(row,col+1,'Warnings')
-    worksheet.set_column(label,column_width,cell_format)
-    workbook.close()
+    if not os.path.isfile(save_path):
+        workbook = xlsxwriter.Workbook(save_path)
+        worksheet = workbook.add_worksheet()
+        cell_format = workbook.add_format({'align':'right',
+                                            'bold' : 'True',
+                                           'font':'Arial',
+                                           'font_size' : 10})
+        label = 'A:AA'
+        column_width = 18
+        row = 0
+        col = 0
+        worksheet.write(row,col,'Outlier Specimens')
+        worksheet.write(row,col+1,'Warnings')
+        worksheet.set_column(label,column_width,cell_format)
+        workbook.close()
 
 
 def write_to_excel(time_dict,save_path):
