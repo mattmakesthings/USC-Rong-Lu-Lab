@@ -7,10 +7,8 @@ Directory structure::
         Scripts_<version_identifier>
 
 Primary Variables - Will be modified most often
-    data_file - raw data file to be operated on
-    data_folder - contains the file(s) of raw data to be operated on
-    table_file - Groups specimens according to column within table
-    table_folder - contains table_file
+    data_path - raw data file to be operated on
+    table_path - Groups specimens according to column within table
 
 Secondary Variables - Modify at user discretion,
                       mainly names of folders to be created
@@ -26,6 +24,7 @@ table_file = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-
 # Secondary Variables
 sub_folder = ''
 save_folder = 'Rearranged Data'
+################################################################################
 
 #script to group specimen data given a table file
 import pandas as pd

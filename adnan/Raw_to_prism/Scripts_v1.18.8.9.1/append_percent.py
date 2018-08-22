@@ -8,7 +8,7 @@ Directory structure::
         Scripts_<version_identifier>
 
 Primary Variables - Will be modified most often
-    data_file - raw data file to be operated on
+    data_path - raw data file to be operated on
 
 Secondary Variables - Modify at user discretion,
                       mainly names of folders to be created

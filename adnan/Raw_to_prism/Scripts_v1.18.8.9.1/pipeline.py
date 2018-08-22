@@ -10,14 +10,15 @@ Directory structure::
         Scripts_<version_identifier>
 
 Primary Variables - Will be modified most often
-    data_folder - contains the file(s) of raw data to be operated on
-    table_file - Groups specimens according to column within table
-    table_folder - contains table_file
+    data_path - contains the file(s) of raw data to be operated on
+    table_path - Groups specimens according to column within table
     time_unit - this is unit of time that is expressed in the filename of your data
     specimen_limit - this is the size limit of each group from the table file.
                      if set to 0, specimen_limit will be determined from table_files
 
 Secondary Variables - Modify at user discretion, mainly names of folders to be created
+    outlier_file - Name of folder which will be created at end of this script. Will optionally
+                   be read from, to ignore samples in the graph_server script
     sub_folder - Use if multiple groups of data will be contained within the data_folder
                  rename this to match the subfolder containing the data you wish to operate on.
                  Otherwise leave blank (sub_folder = ''). Example folder structure
@@ -27,8 +28,10 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
                         Table
                         Scripts_<version_identifier>
 
-    save_folder_(dr,ap,ss) - These variables name the folders at their respective steps of
+    save_folder_(dr,ap,ss,tc) - These variables name the folders at their respective steps of
                              the pipeline.
+
+    file_marker_tc - file prefix for files in Time Course for Prism folder
 '''
 ################################################################################
 # Primary Variables

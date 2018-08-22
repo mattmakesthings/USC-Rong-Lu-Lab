@@ -8,37 +8,41 @@
 
 
 '''
-specimen_limit - this is the size limit of each group from the table file,
-            make larger if an error is thrown.
-time unit -> time unit used in input file names
+Primary Variables - Will be modified most often
+    specimen_limit - this is the size limit of each group from the table file,
+                make larger if an error is thrown.
+    time unit -> time unit used in input file names
 
-sub_folder -> this is the folder in the load folder that contains the data
-to be used
+    load_folder -> this is the folder in which the load folder is contained
 
-load_folder -> this is the folder in which the load folder is contained
+    table_path -> used when creating the initial data
 
-save_file -> the name of the resulting file once the script has finished
+Secondary Variables - Modify at user discretion,
+                      mainly names of folders to be created
 
-save_folder -> this will contain the save_file and wil be created if it
-does not already exist
+    sub_folder -> refer to pipeline.py
 
-table_file -> used when creating the initial data
+    save_file -> the name of the resulting file once the script has finished
 
-outlier_file -> created with this script. Used to filter out
-                data for graphing.
+    save_folder -> this will contain the save_file and wil be created if it
+    does not already exist
 
-table_folder -> contains the table_file and outlier_file
+    outlier_file -> created with this script. Used to filter out
+                    data for graphing.
 '''
 ##################################################################
+# Primary Variables
 specimen_limit = 0
-sub_folder = ''
+time_unit = "d"
 load_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Transposed Calculated for Prism'
 table_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
 ##################################################################
-time_unit = "d"
+# Secondary Variables
+sub_folder = ''
 save_file = 'Time Course.xlsx'
 save_folder = 'Time course for Prism'
 outlier_file = 'Outliers and Warnings.xlsx'
+##################################################################
 import pandas as pd
 import os
 import re
@@ -109,7 +113,7 @@ def get_specimen_names(df_table):
     ret = []
     for col in df_table:
         ret = ret + list(df_table[col].dropna().astype(int).astype(str).values)
-        
+
     for i in range(len(ret)):
         ret[i] = "M" + str(ret[i])
     return ret

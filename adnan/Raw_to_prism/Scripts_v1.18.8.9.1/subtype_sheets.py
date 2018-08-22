@@ -11,14 +11,13 @@ Directory structure::
 Primary Variables - Will be modified most often
     specimen_limit - this is the size limit of each group from the table file.
                      if set to 0, specimen_limit will be determined from table_file
-    data_file - raw data file to be operated on
-    table_file - Groups specimens according to column within table
-    table_folder - contains table_file
+    data_path - raw data file to be operated on
+    table_path - Groups specimens according to column within table
+
 Secondary Variables - Modify at user discretion,
                       mainly names of folders to be created
 
     sub_folder - refer to pipeline.py script for details
-    load_folder - where files from append_percent.py will be loaded from.
     save_folder - folder that will be created if it doesn't exist,
                   will store all files created by this script.
 '''
