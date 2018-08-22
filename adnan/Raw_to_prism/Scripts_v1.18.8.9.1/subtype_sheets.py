@@ -25,13 +25,11 @@ Secondary Variables - Modify at user discretion,
 ################################################################################
 # Primary Variables
 specimen_limit = 0
-data_file = 'CLP 2.0 60d RAW.xls'
-table_file = 'HSC-CLP 2.0 Table.xlsx'
-table_folder = 'Table'
+data_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Calculated for Prism/v1.18.8.9.1 Rearranged CLP 2.0 12d RAW.xls'
+table_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
 ################################################################################
 # Secondary Variables
 sub_folder = ''
-load_folder = 'Calculated for Prism'
 save_folder = 'Transposed Calculated for Prism'
 ################################################################################
 import pandas as pd
@@ -45,7 +43,8 @@ from data_regroup import create_save_folder, create_path, prepend_folder,load_ta
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-
+load_folder, data_file = os.path.split(data_path)
+table_folder, table_file = os.path.split(table_path)
 
 def col_to_dict(df):
     d = OrderedDict()
@@ -152,9 +151,7 @@ if __name__ == "__main__":
     save_folder = prepend_folder(save_folder)
     table_folder = prepend_folder(table_folder)
 
-    load_folder = os.path.join(load_folder,sub_folder)
     save_folder = os.path.join(save_folder,sub_folder)
-    table_path = os.path.join(table_folder,table_file)
 
     load_path = create_path(load_folder,data_file,' GraphPad ')
     save_path = create_path(save_folder,data_file,' GraphPad Transposed ')

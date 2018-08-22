@@ -20,11 +20,10 @@ Secondary Variables - Modify at user discretion,
 '''
 ################################################################################
 # Primary Variables
-data_file = 'IL10KO 1.0 4mo RAW.xls'
+data_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Rearranged Data/v1.18.8.9.1 Rearranged CLP 2.0 12d RAW.xls'
 ################################################################################
 # Secondary Variables
 sub_folder = ''
-load_folder = 'Rearranged Data'
 save_folder = 'Calculated for Prism'
 ################################################################################
 import pandas as pd
@@ -40,7 +39,8 @@ version = get_version()
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
-load_folder = prepend_folder(load_folder)
+
+load_folder, data_file = os.path.split(data_path)
 save_folder = prepend_folder(save_folder)
 
 #column names from excel sheet

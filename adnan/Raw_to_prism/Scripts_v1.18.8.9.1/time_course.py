@@ -30,28 +30,29 @@ outlier_file -> created with this script. Used to filter out
 table_folder -> contains the table_file and outlier_file
 '''
 ##################################################################
-specimen_limit = 10
-time_unit = "d"
+specimen_limit = 0
 sub_folder = ''
-load_folder = 'Transposed Calculated for Prism'
+load_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Transposed Calculated for Prism'
+table_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
+##################################################################
+time_unit = "d"
 save_file = 'Time Course.xlsx'
 save_folder = 'Time course for Prism'
-table_file = 'HSC-CLP 2.0 Table.xlsx'
 outlier_file = 'Outliers and Warnings.xlsx'
-table_folder = 'Table'
-##################################################################
-
 import pandas as pd
 import os
 import re
-from data_regroup import load_data, prepend_folder, create_path, create_save_folder, get_regex
+from data_regroup import load_data,load_table, prepend_folder, create_path, create_save_folder, get_regex
+from subtype_sheets import get_specimen_limit
 from collections import OrderedDict
 import operator
 import xlsxwriter
 
-load_folder = prepend_folder(load_folder)
+table_folder, table_file = os.path.split(table_path)
+
+#load_folder = prepend_folder(load_folder)
 save_folder = prepend_folder(save_folder)
-load_folder = os.path.join(load_folder,sub_folder)
+#oad_folder = os.path.join(load_folder,sub_folder)
 
 def get_files(folder_):
     file_list = os.listdir(folder_)
@@ -107,8 +108,8 @@ def get_sheet_names(file_dict,df):
 def get_specimen_names(df_table):
     ret = []
     for col in df_table:
-        ret = ret + list(df_table[col].values)
-
+        ret = ret + list(df_table[col].dropna().astype(int).astype(str).values)
+        
     for i in range(len(ret)):
         ret[i] = "M" + str(ret[i])
     return ret
@@ -230,7 +231,7 @@ def write_to_excel(time_dict,save_path):
 if __name__ == "__main__":
 
     files = get_files(load_folder)
-    files = remove_non_excel(files,)
+    files = remove_non_excel(files)
     file_dict = files_to_dict(files)
     file_dict = insert_time(file_dict,time_unit)
 
@@ -241,8 +242,11 @@ if __name__ == "__main__":
     df = get_df_dict(load_folder,files[0])
     sheet_list = get_sheet_names(file_dict,df)
 
+
     #create list that contain filtered specimen names
-    df_col_r = get_specimen_names(df,sheet_list)
+    df_table = load_table(table_path)
+    specimen_limit = get_specimen_limit(df_table,specimen_limit)
+    df_col_r = get_specimen_names(df_table)
     df_list = list_of_df(len(sheet_list),df_col_r, file_dict.values())
 
     #create ordered dict to tie sheetnames to dataframes

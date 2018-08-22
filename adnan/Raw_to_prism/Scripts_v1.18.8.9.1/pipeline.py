@@ -32,10 +32,9 @@ Secondary Variables - Modify at user discretion, mainly names of folders to be c
 '''
 ################################################################################
 # Primary Variables
-data_folder = 'Data'
-table_file = 'HSC-CLP 2.0 Table.xlsx'
+data_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Data'
+table_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
 outlier_file = 'Outliers and Warnings.xlsx'
-table_folder = 'Table'
 time_unit = 'd'
 specimen_limit = 0
 ################################################################################
@@ -63,14 +62,16 @@ import time_course as tc
 from version import get_version
 version = get_version()
 
-data_folder = os.path.join(data_folder,sub_folder)
+table_folder , table_file = os.path.split(table_path)
+
+data_folder = os.path.join(data_path,sub_folder)
 save_folder_dr = os.path.join(save_folder_dr,sub_folder)
 save_folder_ap = os.path.join(save_folder_ap,sub_folder)
 save_folder_ss = os.path.join(save_folder_ss,sub_folder)
 save_folder_tc = os.path.join(save_folder_tc,sub_folder)
 
-data_folder = dr.prepend_folder(data_folder)
-table_folder = dr.prepend_folder(table_folder)
+# data_folder = dr.prepend_folder(data_folder)
+# table_folder = dr.prepend_folder(table_folder)
 save_folder_dr = dr.prepend_folder(save_folder_dr)
 save_folder_ap = dr.prepend_folder(save_folder_ap)
 save_folder_ss = dr.prepend_folder(save_folder_ss)
@@ -80,10 +81,6 @@ save_folder_tc = dr.prepend_folder(save_folder_tc)
 save_folder_ss_cva = os.path.join(save_folder_ss,chimerism_folder_ss)
 save_folder_ss_gp = os.path.join(save_folder_ss,graphpad_paste_folder_ss)
 
-table_path = os.path.join(table_folder,table_file)
-
-
-table_path = os.path.join(table_folder,table_file)
 df_table = dr.load_table(table_path)
 specimen_limit = ss.get_specimen_limit(df_table,specimen_limit)
 ss.specimen_limit = specimen_limit
@@ -164,11 +161,12 @@ if __name__ == "__main__":
         #add the group row
         time_dict = tc.append_groups(time_dict,table_path,specimen_limit)
 
-        #create outlier file
-        outlier_path = os.path.join(table_folder,outlier_file)
-        tc.create_empty_outlier_table(outlier_path)
 
         #save
         save_file = file_marker_tc + partial_filename + '.xlsx'
         save_path = os.path.join(save_folder_tc,save_file)
         tc.write_to_excel(time_dict,save_path)
+
+    #create outlier file
+    outlier_path = os.path.join(table_folder,outlier_file)
+    tc.create_empty_outlier_table(outlier_path)

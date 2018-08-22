@@ -20,10 +20,8 @@ Secondary Variables - Modify at user discretion,
 '''
 ################################################################################
 # Primary Variables
-data_file = 'IL10KO 1.0 2mo RAW.xls'
-data_folder = 'Data'
-table_file = 'IL10KO 1.0 Table 01.xlsx'
-table_folder = 'Table'
+data_path = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Data/CLP 2.0 12d RAW.xls'
+table_file = '/home/matt/Documents/USC-Rong-Lu-Lab/adnan/Raw_to_prism/Table/HSC-CLP 2.0 Table.xlsx'
 ################################################################################
 # Secondary Variables
 sub_folder = ''
@@ -41,14 +39,15 @@ from itertools import cycle
 import pandas.io.formats.excel
 pandas.io.formats.excel.header_style = None
 
+data_folder , data_file = os.path.split(data_path)
 
 #prepends folder parent directory to folder name
 def prepend_folder(s):
     parent_dir = os.path.dirname(os.getcwd())
     return os.path.join(parent_dir,s)
 
-data_folder = prepend_folder(data_folder)
-table_folder = prepend_folder(table_folder)
+# data_folder = prepend_folder(data_folder)
+#table_folder = prepend_folder(table_folder)
 save_folder = prepend_folder(save_folder)
 
 def load_data(path,sheet_name = 0):
@@ -204,13 +203,13 @@ def create_path(folder,data_file,identifier = ''):
 
 if __name__ == "__main__":
     # load data into pandas dataframe
+
     print data_file
-    data_path = [data_folder,sub_folder,data_file]
-    data_path = os.path.join(*data_path)
+
     df_RAW = load_data(data_path)
 
     # load table data into dataframe
-    path = os.path.join(table_folder,table_file)
+    path = table_file
     df_table = load_table(path)
     df_table = df_table.apply(pd.to_numeric)
     # group data
