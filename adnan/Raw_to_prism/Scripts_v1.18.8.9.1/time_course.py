@@ -112,6 +112,7 @@ def get_sheet_names(file_dict,df):
 def get_specimen_names(df_table):
     ret = []
     for col in df_table:
+        print list(df_table[col].dropna().astype(int).astype(str).values)
         ret = ret + list(df_table[col].dropna().astype(int).astype(str).values)
 
     for i in range(len(ret)):
@@ -176,7 +177,7 @@ def append_groups(time_dict,table_path,specimen_limit):
     df_table = load_data(table_path)
     group_row = []
     for col_name in df_table.columns:
-        group_row.extend([col_name]*specimen_limit)
+        group_row.extend([col_name]*len(df_table[col_name].dropna()))
         # group_row.append(col_name)
         # for x in range(specimen_limit - 1):
         #     group_row.append('')
