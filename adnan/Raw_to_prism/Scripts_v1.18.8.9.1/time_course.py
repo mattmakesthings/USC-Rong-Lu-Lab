@@ -178,7 +178,6 @@ def append_groups(time_dict,table_path,specimen_limit):
     for col_name in df_table.columns:
         group_row.extend([col_name]*len(df_table[col_name].dropna()))
 
-
     for sheet, time_df in time_dict.items():
         offset = -(len(group_row)- len(time_df.columns))
         if offset == 0:

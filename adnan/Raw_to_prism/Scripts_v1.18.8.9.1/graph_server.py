@@ -34,6 +34,7 @@ import pandas as pd
 data_folder , filename = os.path.split(file_path)
 
 from data_regroup import prepend_folder, load_table
+from timecourse_outliers import clean_spec_list
 
 def drop_unnamed_cols(df):
     return df.drop(df.columns[df.columns.str.contains('unnamed',case = False)],axis = 1)
@@ -48,6 +49,7 @@ def remove_outliers(df,outlier_path):
     first_chars = pattern.sub("", col[0])
     first_chars = first_chars[0]
     specimens = df_table.T.values[0]
+    specimens = clean_spec_list(specimens)
     drop_cols = [str(first_chars) + str(specimen) for specimen in specimens]
     df = df.drop(drop_cols, axis=1, errors='ignore')
     return df

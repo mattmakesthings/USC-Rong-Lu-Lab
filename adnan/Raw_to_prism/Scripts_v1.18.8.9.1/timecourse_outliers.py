@@ -40,6 +40,11 @@ def clean_table(df_outlier):
         df_outlier[col] = pd.to_numeric(df_outlier[col], errors='coerce')
     return df_outlier
 
+def clean_spec_list(lst):
+    lst = [i for i in lst if str(i) != 'nan']
+    lst = [int(i) for i in lst]
+    return lst
+
 def color_timecourse(time_course_dict, df_outlier,save_path):
     writer, workbook = initial_formatting(time_course_dict,save_path)
     red ='Outlier Specimens'
@@ -76,7 +81,7 @@ def color_timecourse(time_course_dict, df_outlier,save_path):
 def initial_formatting(time_course_dict,save_path):
     writer = pd.ExcelWriter(save_path,engine = 'xlsxwriter')
     workbook = writer.book
-    print writer
+
     cell_format = workbook.add_format({'align':'right',
                                        'font':'Arial',
                                        'font_size' : 10})
@@ -98,17 +103,15 @@ def convert_to_specimen_name(col):
         col[num] = 'M' + str(col[num])
     return col
 
-
-def apply_color(color):
-    return ['background-color:' + color]
-
 if __name__ == "__main__":
     df_outlier = pd.read_excel(outlier_path)
     df_outlier = df_outlier.applymap(str)
+    df_outlier = clean_table(df_outlier)
 
     time_course_dict = load_data(time_course_path,sheet_name = None)
 
     table_path = os.path.join(table_folder,table_file)
     df_table = load_table(table_path)
 
+    #time_course_dict = add_error_row(time_course_dict,df_outlier)
     color_timecourse(time_course_dict,df_outlier,time_course_path)
