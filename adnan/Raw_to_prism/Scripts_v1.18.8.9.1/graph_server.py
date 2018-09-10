@@ -177,9 +177,8 @@ app.layout = html.Div(children = [
     ),
 
 
-    dcc.Graph(
-        id = 'scatter1',
-        )
+    dcc.Graph(id = 'scatter1'),
+    dcc.Graph(id = 'table')
 ])
 
 @app.callback(
@@ -187,15 +186,14 @@ app.layout = html.Div(children = [
     [dash.dependencies.Input('group dropdown','value'),
      dash.dependencies.Input('sheet dropdown', 'value')])
 def update_scatter(groups,sheet):
-    hold_val = sheet
     traces = []
     for g in groups:
         traces.append(
             go.Scatter(x=x_list,
-                       y=all_pts[hold_val]['y'][g],
+                       y=all_pts[sheet]['y'][g],
                        error_y=dict(
                              type='data',
-                             array=all_pts[hold_val]['err'][g],
+                             array=all_pts[sheet]['err'][g],
                              visible=True
                              ),
                         name = g
@@ -216,6 +214,37 @@ def update_scatter(groups,sheet):
     }
 
 
+@app.callback(
+    dash.dependencies.Output('table','figure'),
+    [dash.dependencies.Input('group dropdown','value'),
+     dash.dependencies.Input('sheet dropdown', 'value')])
+def update_table(groups,sheet):
+    traces = []
+    for g in groups:
+        traces.append(
+            go.Scatter(x=x_list,
+                       y=all_pts[sheet]['y'][g],
+                       error_y=dict(
+                             type='data',
+                             array=all_pts[sheet]['err'][g],
+                             visible=True
+                             ),
+                        name = g
+                      )
+        )
+
+
+    return {
+        'data' : traces,
+        'layout' : go.Layout(
+            xaxis = {
+                'title' : 'Time (' + unit_time + ')'
+            },
+            yaxis = {
+                'title' : 'to be added'
+            }
+        )
+    }
 
 if __name__ == '__main__':
     app.run_server(debug=True)
