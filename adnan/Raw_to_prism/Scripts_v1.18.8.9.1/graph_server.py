@@ -25,6 +25,7 @@ import dash
 import dash_core_components as dcc
 import dash_html_components as html
 import plotly.graph_objs as go
+import plotly.figure_factory as ff
 
 import os
 import re
@@ -60,6 +61,11 @@ def get_time_unit(df):
     #remove group index
     reg = re.sub('[\d]+',"",str(x[0]))
     return reg
+
+def get_time(df):
+    time_pts = list(df.index)
+    time_pts = [t for t in time_pts if t!= -1]
+    return time_pts
 
 def get_x_pts(df):
     # get x values
@@ -113,12 +119,23 @@ def get_err(df):
                 err_list.append(row.sem())
         ret_dict[t] = err_list
     return ret_dict
-
 def generate_data_pts(df):
     x = get_x_pts(df)
     y = get_y_pts(df)
     err = get_err(df)
     return x,y,err
+
+def generate_table(dataframe, max_rows=10):
+    return html.Table(
+        # Header
+        [html.Tr([html.Th(col) for col in dataframe.columns])] +
+
+        # Body
+        [html.Tr([
+            html.Td(dataframe.iloc[i][col]) for col in dataframe.columns
+        ]) for i in range(min(len(dataframe), max_rows))]
+    )
+
 
 app = dash.Dash()
 
@@ -155,6 +172,11 @@ for k in all_df.keys():
 
 unit_time = get_time_unit(all_df['Granulocytes'])
 
+colors = {
+    'background': '#111111',
+    'text': '#052E63'
+}
+
 app.layout = html.Div(children = [
 
     #sheet dropdown
@@ -176,9 +198,27 @@ app.layout = html.Div(children = [
         clearable = False
     ),
 
+    dcc.Dropdown(
+        id = 'table dropdown',
+        options=[
+                {'label' : 'Show data table', 'value' : True},
+                {'label' :'no table', 'value' : False}
+                 ],
+        multi=False,
+        value=True,
+    ),
+
 
     dcc.Graph(id = 'scatter1'),
-    dcc.Graph(id = 'table')
+    html.H2(
+        children='Graph Data',
+        style={
+            'textAlign': 'left',
+            'color': colors['text']
+        }
+    ),
+    dcc.Graph(id='table-container',style={'width' : '100%','display': 'inline-block', 'padding': '0 20'})
+    # html.Div(html.Div(id='table-container'),style={'width': '49%', 'display': 'inline-block', 'padding': '0 20'})
 ])
 
 @app.callback(
@@ -215,36 +255,35 @@ def update_scatter(groups,sheet):
 
 
 @app.callback(
-    dash.dependencies.Output('table','figure'),
+    dash.dependencies.Output('table-container','figure'),
     [dash.dependencies.Input('group dropdown','value'),
-     dash.dependencies.Input('sheet dropdown', 'value')])
-def update_table(groups,sheet):
-    traces = []
-    for g in groups:
-        traces.append(
-            go.Scatter(x=x_list,
-                       y=all_pts[sheet]['y'][g],
-                       error_y=dict(
-                             type='data',
-                             array=all_pts[sheet]['err'][g],
-                             visible=True
-                             ),
-                        name = g
-                      )
-        )
+     dash.dependencies.Input('sheet dropdown', 'value'),
+     dash.dependencies.Input('table dropdown', 'value')])
+def update_table(groups,sheet,show_table):
+    if show_table == False:
+        return ff.create_table(pd.DataFrame())
+    else:
+        y_pts = all_pts[sheet]['y']
+        err_range = all_pts[sheet]['err']
+        time_pts = get_time(all_df[sheet])
 
 
-    return {
-        'data' : traces,
-        'layout' : go.Layout(
-            xaxis = {
-                'title' : 'Time (' + unit_time + ')'
-            },
-            yaxis = {
-                'title' : 'to be added'
-            }
-        )
-    }
+
+        ret_df = pd.DataFrame(index=time_pts)
+        for g in groups:
+            ret_df[g] = pd.Series(y_pts[g],index = ret_df.index)
+            ret_df[str(g) + " - err"] = pd.Series(err_range[g],index = ret_df.index)
+        new_table_figure = ff.create_table(ret_df,index=True)
+        return new_table_figure
+        # return generate_table(ret_df)
+
+# @app.callback(
+#     dash.dependencies.Output('table-container','hidden'),
+#     [dash.dependencies.Input('table dropdown', 'value')])
+# def update_table(show_table):
+#     if show_table:
+#         return True
+#     return False
 
 if __name__ == '__main__':
     app.run_server(debug=True)
