@@ -16,8 +16,8 @@ How it works:
 
 ################################################################################
 data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
-cell_types = ['Cgr','Cb','Chsc']
-threshold_list = [0,0.05,0.10,0.15,0.20]
+cell_types = ['Cgr','Cb']
+threshold_list = [0,0.01,0.05,0.10,0.15,0.20]
 time_unit = 'D'
 ext = '.txt'
 ################################################################################
@@ -146,6 +146,8 @@ def final_column_names(df,time_points):
             for cell in cell_types:
                 if time in col and cell in col:
                     col_names.append(cell + " " + time)
+
+            col_names.append("total " + time)
     return col_names
 
 def create_dfs_from_dir(folder):

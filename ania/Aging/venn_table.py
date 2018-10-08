@@ -5,22 +5,16 @@ This file creates a table that shows the percentage of a population of cells
 over different and overlapping timepoints relative to the sum of the cells over
 the entire time period.
 
-How it works:
-    copy and paste the absolute path of one of the files in the directory containing all
-    the files.
-
-    The script will look for a date in the filename and use that to name the output filename
-
-
 '''
 
 ################################################################################
-data_file = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/0-Ania_M3000_percent-engraftment_070318.xlsx'
+data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
 cell_types = ['Cgr','Cb']
 time_unit = 'D'
-ext = '.xlsx'
+threshold = 0.2
+ext = '.txt'
 ################################################################################
-default_output_name = 'percent engraftment summary.xlsx'
+default_output_name = 'venn_table.xlsx'
 
 import os
 import pandas as pd
@@ -43,7 +37,10 @@ def cell_type_dict(df,cell_type):
         if cell_type in col_name:
             m = re.search(time_unit + "[0-9]+",col_name)
             s = m.group(0)
-            cell_dict[s] = df[col_name][df[col_name]!= 0]
+            if threshold == 0:
+                cell_dict[s] = df[col_name][df[col_name] > threshold]
+            else:
+                cell_dict[s] = df[col_name][df[col_name] >= threshold]
     return cell_dict
 
 
@@ -139,7 +136,10 @@ def get_percent_labels(labels):
     for k,v in labels.items():
         total += (int)(v.split(": ")[1])
     for k,v in labels.items():
-        labels[k] = ((int)(v.split(": ")[1]) / total) * 100
+        if total == 0:
+            labels[k] = 0
+        else:
+            labels[k] = ((int)(v.split(": ")[1]) / total) * 100
 
     return labels
 
@@ -194,7 +194,7 @@ def time_point_permutations(time_points):
 
 def create_dfs_from_dir(folder):
     fname_spec_dict = get_specimen_names(folder)
-    df = pd.read_excel(list(fname_spec_dict.keys())[0])
+    df = pd.read_csv(list(fname_spec_dict.keys())[0],delimiter = "\t")
     time_points = get_times(df)
     column_names = time_point_permutations(time_points)
 
@@ -204,7 +204,7 @@ def create_dfs_from_dir(folder):
 
         for fname, specimen in fname_spec_dict.items():
             print fname, "\t", cell
-            df = pd.read_excel(fname)
+            df = pd.read_csv(fname,delimiter = "\t")
             df_dict[cell].loc[specimen] = create_row(df,column_names,cell,specimen)
 
     return df_dict
@@ -229,7 +229,8 @@ def get_output_filename(filename):
     m = re.search("_[0-9]+",filename)
     if m is not None:
         s = m.group(0)
-        fn = "summary of " + s + ".xlsx"
+        s = s.strip("_")
+        fn = "venn table " + s + ".xlsx"
         return fn
     else:
         print "date not found"
@@ -240,23 +241,9 @@ def get_output_filename(filename):
 # def get_barcode_cell_dict(df,)
 
 if __name__ == "__main__":
-    df = pd.read_excel(data_file)
-    cell_dict = OrderedDict()
-    for i in cell_types:
-         cell_dict[i] = cell_type_dict(df,i)
-    time_points =  get_times(df)
+    df_dict = create_dfs_from_dir(data_folder)
 
-    #for cell in cell_types:
-
-    # fig, ax = venn.venn4(labels, names=time_points)
-
-    # plt.savefig(cell_types[0]+ "+" +cell_types[1] +'.png')
-    #plt.gcf().clear()
-
-    # print get_specimen_names(os.path.dirname(data_file))
-    df_dict = create_dfs_from_dir(os.path.dirname(data_file))
-
-    fn = get_output_filename(data_file)
+    fn = get_output_filename(os.listdir(data_folder)[0])
     if fn == None:
         fn = default_output_name
-    save_df(df_dict,os.path.join(os.path.dirname(data_file),fn))
+    save_df(df_dict,os.path.join(data_folder,fn))

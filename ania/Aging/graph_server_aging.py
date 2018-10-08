@@ -6,7 +6,8 @@ data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging'
 threshold_list = [0,0.05,0.10,0.15,0.20]
 cell_types = ['Cgr','Cb','Chsc']
 time_unit = 'D'
-ext = '.xlsx'
+toi = '122'
+ext = '.txt'
 ################################################################################
 
 import dash
@@ -27,16 +28,19 @@ def drop_unnamed_cols(df):
 def get_group_names(df):
     return df.loc[-1].unique()
 
-def get_times(df,cell_type = None):
+def get_times(df,cell_list = None):
+    if cell_list != None:
+        cell_list = list(cell_list)
     time_list = []
     for col_name in df.columns:
-        if cell_type != None:
-            if cell_type in col_name:
-                m = re.search(time_unit + "[0-9]+",col_name)
-                if m is not None:
-                    s = m.group(0)
-                    s = s[len(time_unit):]
-                    time_list.append(int(s))
+        if cell_list != None:
+            for cell_type in cell_list:
+                if cell_type in col_name:
+                    m = re.search(time_unit + "[0-9]+",col_name)
+                    if m is not None:
+                        s = m.group(0)
+                        s = s[len(time_unit):]
+                        time_list.append(int(s))
         else:
             m = re.search(time_unit + "[0-9]+",col_name)
             if m is not None:
@@ -264,15 +268,16 @@ app.layout = html.Div(children = [
         [dash.dependencies.Input('file dropdown', 'value'),
          dash.dependencies.Input('threshold dropdown', 'value'),
          dash.dependencies.Input('cell type dropdown', 'value')])
-def update_barcode_options(file_name,threshold,cell_type):
-    df = pd.read_excel(file_name)
+def update_barcode_options(file_name,threshold,cell_list):
+    df = pd.read_csv(file_name,delimiter="\t")
     barcodes = []
     for col in df.columns:
-        if cell_type in col:
-            temp_bc = get_entries_over_threshold(df,col,threshold).index
-            temp_bc = temp_bc[0:10]
-            for bc in temp_bc:
-                barcodes.append(df["code"].iloc[bc])
+        for cell_type in cell_list:
+            if cell_type in col and toi in col:
+                temp_bc = get_entries_over_threshold(df,col,threshold).index
+                temp_bc = temp_bc[0:10]
+                for bc in temp_bc:
+                    barcodes.append(df["code"].iloc[bc])
     barcodes = list(set(barcodes))
 
     dropdown = []
@@ -286,14 +291,15 @@ def update_barcode_options(file_name,threshold,cell_type):
         [dash.dependencies.Input('file dropdown', 'value'),
          dash.dependencies.Input('threshold dropdown', 'value'),
          dash.dependencies.Input('cell type dropdown', 'value')])
-def update_barcode_value(file_name,threshold,cell_type):
-    df = pd.read_excel(file_name)
+def update_barcode_value(file_name,threshold,cell_list):
+    df = pd.read_csv(file_name,delimiter="\t")
     barcodes = []
     for col in df.columns:
-        if cell_type in col:
-            temp_bc = get_entries_over_threshold(df,col,threshold)
-            for bc in temp_bc.iloc[:5].index:
-                barcodes.append(df["code"].iloc[bc])
+        for cell_type in cell_list:
+            if cell_type in col:
+                temp_bc = get_entries_over_threshold(df,col,threshold)
+                for bc in temp_bc.iloc[:5].index:
+                    barcodes.append(df["code"].iloc[bc])
     barcodes = list(set(barcodes))
     return barcodes
 
@@ -302,28 +308,32 @@ def update_barcode_value(file_name,threshold,cell_type):
     [dash.dependencies.Input('barcode dropdown','value'),
      dash.dependencies.Input('file dropdown', 'value'),
      dash.dependencies.Input('cell type dropdown','value')])
-def update_scatter(barcodes,file_name,cell_type):
+def update_scatter(barcodes,file_name,cell_list):
     traces = []
 
-    df = pd.read_excel(file_name)
-    time_list = get_times(df,cell_type)
+    cell_list = list(cell_list)
+
+    df = pd.read_csv(file_name,delimiter="\t")
+    time_list = get_times(df,cell_list)
 
     print time_list
     y_val = {}
 
     df_cell_cols = []
     for col in df.columns:
-        if cell_type in col:
-            df_cell_cols.append(col)
+        for cell_type in cell_list:
+            if cell_type in col:
+                df_cell_cols.append(col)
 
     for bc in barcodes:
         val_list = []
         for t in time_list:
             col_name = ''
             for col in df_cell_cols:
-                if str(t) in col and cell_type in col:
-                    col_name = col
-                    break
+                for cell_type in cell_type:
+                    if str(t) in col and cell_type in col:
+                        col_name = col
+                        break
 
         # print df[col_name][df['code'].isin(barcodes)]
             val_list.append(df[col_name][df['code'] == bc].values[0])

@@ -6,9 +6,10 @@
 data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
 cell_types = ['Cgr','Cb']
 #output folder will be created in data_folder
-file_tag = '0-Ania'
+file_tag = 'Ania_'
 output_folder = 'venn diagrams'
 time_unit = 'D'
+threshold = 0.2
 ################################################################################
 
 import os
@@ -27,7 +28,10 @@ def cell_type_dict(df,cell_type):
         if cell_type in col_name:
             m = re.search(time_unit + "[0-9]+",col_name)
             s = m.group(0)
-            cell_dict[s] = df[col_name][df[col_name]!= 0]
+            if threshold == 0:
+                cell_dict[s] = df[col_name][df[col_name] > threshold]
+            else:
+                cell_dict[s] = df[col_name][df[col_name] >= threshold]
     return cell_dict
 
 
@@ -105,13 +109,11 @@ def create_individual_venn(cell_dict,time_points,output_path):
                 cell_dat.append(lst)
 
         labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
-        print labels
-        exit()
 
         if get_venn_func(time_points) != None:
             fig, ax = get_venn_func(time_points)(labels, names=time_points)
 
-            plt.savefig(os.path.join(this_path,specimen_name + " " + cell_name + " " + date +'.png'))
+            plt.savefig(os.path.join(this_path,specimen_name + " " + cell_name + " " + date + " threshold " + str(threshold) + '.png'))
             plt.gcf().clear()
         else:
             print "\t",specimen_name," ",cell_name," contains only one time point, No venn diagram will be created"
@@ -127,13 +129,11 @@ def create_combined_venn(cell_dict,time_points,output_path):
         combined.append(get_intersection(cell_dict,[cell_types[0],cell_types[1]],time))
 
     labels = venn.get_labels(combined, fill=['number', 'logic'])
-    print labels
-    exit()
 
     if get_venn_func(time_points) != None:
         fig, ax = get_venn_func(time_points)(labels, names=time_points)
 
-        plt.savefig(os.path.join(this_path,specimen_name + " " + cell_types[0] + ' + ' + cell_types[1] + " " + date + '.png'))
+        plt.savefig(os.path.join(this_path,specimen_name + " " + cell_types[0] + ' + ' + cell_types[1] + " " + date + " threshold " + str(threshold) + '.png'))
         plt.gcf().clear()
     else:
         print "\t",specimen_name," "," + ".join(cell_types)," contains only one time point, No venn diagram will be created"
@@ -162,13 +162,13 @@ if __name__ == "__main__":
     if not os.path.exists(output_path):
         os.mkdir(output_path)
 
-    files = get_file_names(data_folder,'.xlsx')
+    files = get_file_names(data_folder,'.txt')
     for data_file in files:
         print data_file
         specimen_name = get_specimen_name(data_file)
         date = get_date(data_file)
 
-        df = pd.read_excel(data_file)
+        df = pd.read_csv(data_file,delimiter = "\t")
         cell_dict = OrderedDict()
         for i in cell_types:
              cell_dict[i] = cell_type_dict(df,i)
