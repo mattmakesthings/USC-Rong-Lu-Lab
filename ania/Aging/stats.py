@@ -1,4 +1,5 @@
 #! /usr/bin/python2.7
+from __future__ import division
 '''
 This file creates a table that shows the percentage of a population of cells
 over different and overlapping timepoints relative to the sum of the cells over
@@ -29,12 +30,14 @@ import matplotlib.pyplot as plt
 from matplotlib_venn import venn3
 import itertools
 
+
 import venn
 
 
 # %matplotlib notebook
 
 def cell_type_dict(df,cell_type):
+    #key is time_pt, val is non_zero rows
     cell_dict = OrderedDict()
     for col_name in df.columns:
         if cell_type in col_name:
@@ -44,13 +47,20 @@ def cell_type_dict(df,cell_type):
     return cell_dict
 
 
-def get_times(df):
+def get_times(df,cell_type = None):
     time_list = []
     for col_name in df.columns:
-        m = re.search(time_unit + "[0-9]+",col_name)
-        if m is not None:
-            s = m.group(0)
-            time_list.append(s)
+        if cell_type != None:
+            if cell_type in col_name:
+                m = re.search(time_unit + "[0-9]+",col_name)
+                if m is not None:
+                    s = m.group(0)
+                    time_list.append(s)
+        else:
+            m = re.search(time_unit + "[0-9]+",col_name)
+            if m is not None:
+                s = m.group(0)
+                time_list.append(s)
     return sorted(set(time_list))
 
 def get_data_indices(cell_dict,cell,time_pt):
@@ -93,26 +103,75 @@ def get_sum(df,cell_type):
             total += df[col_name].sum()
     return total
 
+def column_names_to_label_keys(time_points):
+    comb = []
+    comb_names = time_point_permutations(time_points)
+    for n in comb_names:
+        if "\n" in n:
+            comb.append(n)
 
-def create_row(df,colum_names,cell_type,specimen):
-    #remove specimen later
-    time_pts = get_times(df)
-    total = get_sum(df,cell_type)
+    label_key_dict = OrderedDict()
 
-    col_sums = OrderedDict()
-    for time in time_pts:
-        for df_col in df.columns:
-            if cell_type in df_col and time in df_col:
-                 col_sums[time] = df[df_col].sum()
-    row_vals=[]
-    for comb in colum_names:
-        combination_list = comb.split("\n")
-        if len(combination_list) != 0:
-            combination_sum = 0
-            for time in combination_list:
-                if time in col_sums.keys():
-                    combination_sum += col_sums[time]
-            row_vals.append((combination_sum/total) * 100)
+    #create set names for single time points ('0001','0010', etc.)
+    val = 0
+    for t in time_points:
+        label_key_dict[t] = int(bin(2**val).replace("0b",""))
+        val += 1
+
+    #create set names for multiple time points ('0110','1001', etc.)
+    for c in comb:
+         combination_list = c.split("\n")
+         new_label = 0
+         for n in combination_list:
+             new_label += label_key_dict[n]
+         label_key_dict[c] = str(new_label).zfill(len(time_points))
+
+    for t in time_points:
+        hold = label_key_dict[t]
+        label_key_dict[t] = str(hold).zfill(len(time_points))
+
+    return label_key_dict
+
+
+def get_percent_labels(labels):
+    #gets label values over sum of all label values
+    total = 0
+    for k,v in labels.items():
+        total += (int)(v.split(": ")[1])
+    for k,v in labels.items():
+        labels[k] = ((int)(v.split(": ")[1]) / total) * 100
+
+    return labels
+
+def create_row(df,column_names,cell_type,specimen):
+    cell_dict = OrderedDict()
+    for i in cell_types:
+         cell_dict[i] = cell_type_dict(df,i)
+
+    # get time points for cell type
+    time_points = get_times(df,cell_type = cell_type)
+
+    # get indices of nonzero rows for cell_type
+    cell_dat = []
+    for time in time_points:
+        cell_dat.append(get_data_indices(cell_dict,cell_type,time))
+
+    # get the dictionary of set values
+    labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
+
+    # get the sum of all set values
+    labels = get_percent_labels(labels)
+
+    # create a translator between the set names and column names
+    translator = column_names_to_label_keys(time_points)
+
+    # finally fill row values according to translation
+    row_vals = []
+    for col in column_names:
+        if col in translator.keys():
+            row_vals.append(labels[translator[col]])
+        else:
+            row_vals.append(0)
     return row_vals
 
 
@@ -137,15 +196,16 @@ def create_dfs_from_dir(folder):
     fname_spec_dict = get_specimen_names(folder)
     df = pd.read_excel(list(fname_spec_dict.keys())[0])
     time_points = get_times(df)
-    colum_names = time_point_permutations(time_points)
+    column_names = time_point_permutations(time_points)
 
-    df_dict = {}
+    df_dict = OrderedDict()
     for cell in cell_types:
-        df_dict[cell] = pd.DataFrame(columns = colum_names)
+        df_dict[cell] = pd.DataFrame(columns = column_names)
 
         for fname, specimen in fname_spec_dict.items():
+            print fname, "\t", cell
             df = pd.read_excel(fname)
-            df_dict[cell].loc[specimen] = create_row(df,colum_names,cell,specimen)
+            df_dict[cell].loc[specimen] = create_row(df,column_names,cell,specimen)
 
     return df_dict
 
@@ -187,17 +247,7 @@ if __name__ == "__main__":
     time_points =  get_times(df)
 
     #for cell in cell_types:
-    cell_name = cell_types[0]
-    cell_dat = []
-    for time in time_points:
-        cell_dat.append(get_data_indices(cell_dict,cell_name,time))
 
-
-    combined = []
-    for time in time_points:
-        combined.append(get_intersection(cell_dict,[cell_types[0],cell_types[1]],time))
-
-    # labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
     # fig, ax = venn.venn4(labels, names=time_points)
 
     # plt.savefig(cell_types[0]+ "+" +cell_types[1] +'.png')
@@ -205,6 +255,7 @@ if __name__ == "__main__":
 
     # print get_specimen_names(os.path.dirname(data_file))
     df_dict = create_dfs_from_dir(os.path.dirname(data_file))
+
     fn = get_output_filename(data_file)
     if fn == None:
         fn = default_output_name

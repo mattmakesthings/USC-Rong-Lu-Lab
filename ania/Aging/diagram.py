@@ -105,6 +105,8 @@ def create_individual_venn(cell_dict,time_points,output_path):
                 cell_dat.append(lst)
 
         labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
+        print labels
+        exit()
 
         if get_venn_func(time_points) != None:
             fig, ax = get_venn_func(time_points)(labels, names=time_points)
@@ -125,6 +127,8 @@ def create_combined_venn(cell_dict,time_points,output_path):
         combined.append(get_intersection(cell_dict,[cell_types[0],cell_types[1]],time))
 
     labels = venn.get_labels(combined, fill=['number', 'logic'])
+    print labels
+    exit()
 
     if get_venn_func(time_points) != None:
         fig, ax = get_venn_func(time_points)(labels, names=time_points)
@@ -168,7 +172,7 @@ if __name__ == "__main__":
         cell_dict = OrderedDict()
         for i in cell_types:
              cell_dict[i] = cell_type_dict(df,i)
-        time_points =  get_times(df)
+        time_points = get_times(df)
 
         create_individual_venn(cell_dict,time_points,output_path)
         create_combined_venn(cell_dict,time_points,output_path)

@@ -208,6 +208,9 @@ cell_dropdown = get_cell_dropdown(cell_types)
 
 app = dash.Dash()
 
+#global barcode listd
+barcodes = {}
+
 app.layout = html.Div(children = [
 
     dcc.Dropdown(

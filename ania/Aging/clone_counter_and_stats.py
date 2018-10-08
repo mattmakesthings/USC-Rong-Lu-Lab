@@ -15,11 +15,11 @@ How it works:
 '''
 
 ################################################################################
-data_file = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/0-Ania_M3000_percent-engraftment_070318.xlsx'
+data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
 cell_types = ['Cgr','Cb','Chsc']
 threshold_list = [0,0.05,0.10,0.15,0.20]
 time_unit = 'D'
-ext = '.xlsx'
+ext = '.txt'
 ################################################################################
 default_output_name = 'percent engraftment summary.xlsx'
 
@@ -65,7 +65,7 @@ def get_times(df,cell_type = None):
 def get_full_timelist(folder):
     time_list = []
     for f in get_file_names(folder,ext):
-        df = pd.read_excel(f)
+        df = pd.read_csv(f,delimiter="\t")
         curr_times = get_times(df)
         if len(curr_times) > len(time_list):
             time_list = curr_times
@@ -124,7 +124,7 @@ def get_entries_over_threshold(df,column,threshold=0):
 
 def create_row(filename,output_column_names,time_list,threshold):
     count_dict = {}
-    df = pd.read_excel(filename)
+    df = pd.read_csv(filename,delimiter = "\t")
     col_match = get_matching_col_name(df.columns,output_column_names)
     for out_col, orig_col in col_match.items():
         val = get_entries_over_threshold(df,orig_col,threshold)
@@ -228,7 +228,14 @@ def save_df(df,filename):
 
     writer.save()
 
-def get_output_filename(filename):
+def get_output_filename(folder):
+    file_lst = os.listdir(folder)
+
+    for f in file_lst:
+        if ext in f:
+            filename = f
+            break
+
     m = re.search("_[0-9]+",filename)
     if m is not None:
         s = m.group(0)
@@ -239,10 +246,10 @@ def get_output_filename(filename):
         return None
 
 if __name__ == "__main__":
-    df_dict = create_dfs_from_dir(os.path.dirname(data_file))
+    df_dict = create_dfs_from_dir(data_folder)
     add_stats_df_dict(df_dict)
 
-    fn = get_output_filename(data_file)
+    fn = get_output_filename(data_folder)
     if fn == None:
         fn = default_output_name
-    save_df(df_dict,os.path.join(os.path.dirname(data_file),fn))
+    save_df(df_dict,os.path.join(data_folder,fn))
