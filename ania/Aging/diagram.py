@@ -128,7 +128,11 @@ def create_combined_venn(cell_dict,time_points,output_path):
     for time in time_points:
         combined.append(get_intersection(cell_dict,[cell_types[0],cell_types[1]],time))
 
+    print combined
+
     labels = venn.get_labels(combined, fill=['number', 'logic'])
+    print labels
+    exit()
 
     if get_venn_func(time_points) != None:
         fig, ax = get_venn_func(time_points)(labels, names=time_points)

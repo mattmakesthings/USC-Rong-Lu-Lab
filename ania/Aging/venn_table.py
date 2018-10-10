@@ -11,10 +11,10 @@ the entire time period.
 data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
 cell_types = ['Cgr','Cb']
 time_unit = 'D'
-threshold = 0.2
+threshold = 0.0
 ext = '.txt'
 ################################################################################
-default_output_name = 'venn_table.xlsx'
+default_output_name = 'venn_table thresh:'+ str(threshold)+ '.xlsx'
 
 import os
 import pandas as pd
@@ -39,6 +39,7 @@ def cell_type_dict(df,cell_type):
             s = m.group(0)
             if threshold == 0:
                 cell_dict[s] = df[col_name][df[col_name] > threshold]
+                print s," ",cell_type, " " ,len(cell_dict[s])
             else:
                 cell_dict[s] = df[col_name][df[col_name] >= threshold]
     return cell_dict
@@ -132,7 +133,7 @@ def column_names_to_label_keys(time_points):
 
 def get_percent_labels(labels):
     #gets label values over sum of all label values
-    total = 0
+    total = 0.0
     for k,v in labels.items():
         total += (int)(v.split(": ")[1])
     for k,v in labels.items():
@@ -206,6 +207,7 @@ def create_dfs_from_dir(folder):
             print fname, "\t", cell
             df = pd.read_csv(fname,delimiter = "\t")
             df_dict[cell].loc[specimen] = create_row(df,column_names,cell,specimen)
+            exit()
 
     return df_dict
 
@@ -230,7 +232,7 @@ def get_output_filename(filename):
     if m is not None:
         s = m.group(0)
         s = s.strip("_")
-        fn = "venn table " + s + ".xlsx"
+        fn = "venn table " + s + " thresh:" + str(threshold) + ".xlsx"
         return fn
     else:
         print "date not found"

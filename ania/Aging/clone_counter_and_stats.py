@@ -16,7 +16,7 @@ How it works:
 
 ################################################################################
 data_folder = '/home/matt/Documents/USC-Rong-Lu-Lab/ania/Aging/'
-cell_types = ['Cgr','Cb']
+cell_types = ['Cgr','Cb','Chsc']
 threshold_list = [0,0.01,0.05,0.10,0.15,0.20]
 time_unit = 'D'
 ext = '.txt'
@@ -30,7 +30,6 @@ from collections import OrderedDict
 import matplotlib.pyplot as plt
 from matplotlib_venn import venn3
 import itertools
-import venn
 from scipy import stats
 import numpy as np
 # %matplotlib notebook
@@ -115,6 +114,9 @@ def get_matching_col_name(column_names,output_column_names):
             if all_substring_in_string(col_piece, col):
                 out_dict[out_col] = col
                 break
+        if "total" in out_col:
+            out_dict[out_col] = "combination_column"
+
     return out_dict
 
 def get_entries_over_threshold(df,column,threshold=0):
@@ -123,12 +125,21 @@ def get_entries_over_threshold(df,column,threshold=0):
     return []
 
 def create_row(filename,output_column_names,time_list,threshold):
-    count_dict = {}
+    count_dict = OrderedDict()
     df = pd.read_csv(filename,delimiter = "\t")
     col_match = get_matching_col_name(df.columns,output_column_names)
+    val_list = []
     for out_col, orig_col in col_match.items():
-        val = get_entries_over_threshold(df,orig_col,threshold)
-        count_dict[out_col] = len(val)
+        if orig_col != "combination_column":
+            val = get_entries_over_threshold(df,orig_col,threshold)
+            val_list.append(val)
+            count_dict[out_col] = len(val)
+        else:
+            total = pd.Series()
+            for val in val_list:
+                total = total.add(val,fill_value = 0)
+
+            count_dict[out_col] = len(total)
 
     row_vals = []
     for col in output_column_names:
@@ -141,13 +152,20 @@ def create_row(filename,output_column_names,time_list,threshold):
 
 def final_column_names(df,time_points):
     col_names = []
+    cell_found = 0
+    last_time_point = ""
     for col in df.columns:
-        for time in time_points:
-            for cell in cell_types:
-                if time in col and cell in col:
-                    col_names.append(cell + " " + time)
+        if col != "code":
+            for time in time_points:
+                for cell in cell_types:
+                    if time in col and cell in col:
+                        col_names.append(cell + " " + time)
+                        last_time_point = time
+                        cell_found += 1
+        if cell_found == 2:
+            col_names.append("total " + last_time_point)
+            cell_found = 0
 
-            col_names.append("total " + time)
     return col_names
 
 def create_dfs_from_dir(folder):
