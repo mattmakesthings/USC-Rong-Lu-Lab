@@ -139,6 +139,7 @@ def create_row(filename,output_column_names,time_list,threshold):
             for val in val_list:
                 total = total.add(val,fill_value = 0)
 
+            val_list = []
             count_dict[out_col] = len(total)
 
     row_vals = []

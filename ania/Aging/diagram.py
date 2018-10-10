@@ -9,7 +9,7 @@ cell_types = ['Cgr','Cb']
 file_tag = 'Ania_'
 output_folder = 'venn diagrams'
 time_unit = 'D'
-threshold = 0.2
+threshold = 0.0
 ################################################################################
 
 import os
@@ -44,22 +44,11 @@ def get_times(df):
             time_list.append(s)
     return sorted(set(time_list))
 
-def get_data_indices(cell_dict,cell,time_pt):
+def get_data(cell_dict,cell,time_pt):
     if time_pt in cell_dict[cell].keys():
-        return list(cell_dict[cell][time_pt].index)
+        return cell_dict[cell][time_pt]
     else:
         return None
-
-def get_intersection(cell_dict,cells,time_point):
-    all_indices = []
-    for cell in cells:
-        lst = get_data_indices(cell_dict,cell,time_point)
-        if lst != None:
-            all_indices.append(set(lst))
-    # return list(set(get_data_indices(cell_dict,cells[0],time_point))
-    # .intersection(set(get_data_indices(cell_dict,cells[1],time_point))))
-
-    return list(set.intersection(*all_indices))
 
 def get_barcodes(df):
     return df['code']
@@ -104,8 +93,9 @@ def create_individual_venn(cell_dict,time_points,output_path):
     for cell_name in cell_types:
         cell_dat = []
         for time in time_points:
-            lst = get_data_indices(cell_dict,cell_name,time)
-            if lst != None:
+            hold = get_data(cell_dict,cell_name,time)
+            if type(hold) == type(pd.Series()):
+                lst = list(hold.index)
                 cell_dat.append(lst)
 
         labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
@@ -118,21 +108,34 @@ def create_individual_venn(cell_dict,time_points,output_path):
         else:
             print "\t",specimen_name," ",cell_name," contains only one time point, No venn diagram will be created"
 
+def add_labels_lst(labels_lst):
+
+    print labels_lst
+    exit()
+
 def create_combined_venn(cell_dict,time_points,output_path):
     if not os.path.exists(os.path.join(output_path,specimen_name)):
         this_path = os.mkdir(os.path.join(output_path,specimen_name))
 
     this_path = os.path.join(output_path,specimen_name)
 
-    combined = []
-    for time in time_points:
-        combined.append(get_intersection(cell_dict,[cell_types[0],cell_types[1]],time))
+    cell_dat = [pd.Series()] * len(time_points)
+    for cell_name in cell_types:
+        for time in time_points:
+            ind = time_points.index(time)
+            lst = get_data(cell_dict,cell_name,time)
+            if type(lst) == type(pd.Series()):
+                cell_dat[ind] = cell_dat[ind].add(lst,fill_value = 0)
+                print cell_dat[ind]
 
-    print combined
+    cell_inds = []
+    for cell in cell_dat:
+        cell_inds.append(list(cell.index))
 
-    labels = venn.get_labels(combined, fill=['number', 'logic'])
+    labels = venn.get_labels(cell_inds, fill=['number', 'logic'])
+
     print labels
-    exit()
+    quit()
 
     if get_venn_func(time_points) != None:
         fig, ax = get_venn_func(time_points)(labels, names=time_points)

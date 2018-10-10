@@ -30,6 +30,70 @@ import venn
 
 # %matplotlib notebook
 
+
+# taken from venn.py
+# https://github.com/tctianchi/pyvenn
+################################################################################################
+def get_labels(data, fill=["number"]):
+    """
+    get a dict of labels for groups in data
+
+    @type data: list[Iterable]
+    @rtype: dict[str, str]
+
+    input
+      data: data to get label for
+      fill: ["number"|"logic"|"percent"]
+
+    return
+      labels: a dict of labels for different sets
+
+    example:
+    In [12]: get_labels([range(10), range(5,15), range(3,8)], fill=["number"])
+    Out[12]:
+    {'001': '0',
+     '010': '5',
+     '011': '0',
+     '100': '3',
+     '101': '2',
+     '110': '2',
+     '111': '3'}
+    """
+
+    N = len(data)
+
+    sets_data = [set(data[i]) for i in range(N)]  # sets for separate groups
+    s_all = set(chain(*data))                             # union of all sets
+
+    # bin(3) --> '0b11', so bin(3).split('0b')[-1] will remove "0b"
+    set_collections = {}
+    for n in range(1, 2**N):
+        key = bin(n).split('0b')[-1].zfill(N)
+        value = s_all
+        sets_for_intersection = [sets_data[i] for i in range(N) if  key[i] == '1']
+        sets_for_difference = [sets_data[i] for i in range(N) if  key[i] == '0']
+        for s in sets_for_intersection:
+            value = value & s
+        for s in sets_for_difference:
+            value = value - s
+        set_collections[key] = value
+
+    labels = {k: "" for k in set_collections}
+    if "logic" in fill:
+        for k in set_collections:
+            labels[k] = k + ": "
+    if "number" in fill:
+        for k in set_collections:
+            labels[k] += str(len(set_collections[k]))
+    if "percent" in fill:
+        data_size = len(s_all)
+        for k in set_collections:
+            labels[k] += "(%.1f%%)" % (100.0 * len(set_collections[k]) / data_size)
+
+    return labels
+
+################################################################################################
+
 def cell_type_dict(df,cell_type):
     #key is time_pt, val is non_zero rows
     cell_dict = OrderedDict()
@@ -39,7 +103,7 @@ def cell_type_dict(df,cell_type):
             s = m.group(0)
             if threshold == 0:
                 cell_dict[s] = df[col_name][df[col_name] > threshold]
-                print s," ",cell_type, " " ,len(cell_dict[s])
+                # print s," ",cell_type, " " ,len(cell_dict[s])
             else:
                 cell_dict[s] = df[col_name][df[col_name] >= threshold]
     return cell_dict
@@ -61,11 +125,8 @@ def get_times(df,cell_type = None):
                 time_list.append(s)
     return sorted(set(time_list))
 
-def get_data_indices(cell_dict,cell,time_pt):
-    return list(cell_dict[cell][time_pt].index)
-
-def get_intersection(cell_dict,cells,time_point):
-    return list(set(get_data_indices(cell_dict,cells[0],time_point)).intersection(set(get_data_indices(cell_dict,cells[1],time_point))))
+def get_data(cell_dict,cell,time_pt):
+    return cell_dict[cell][time_pt]
 
 def get_barcodes(df):
     return df['code']
@@ -112,7 +173,7 @@ def column_names_to_label_keys(time_points):
 
     #create set names for single time points ('0001','0010', etc.)
     val = 0
-    for t in time_points:
+    for t in list(reversed(time_points)):
         label_key_dict[t] = int(bin(2**val).replace("0b",""))
         val += 1
 
@@ -135,12 +196,17 @@ def get_percent_labels(labels):
     #gets label values over sum of all label values
     total = 0.0
     for k,v in labels.items():
-        total += (int)(v.split(": ")[1])
+        num = (int)(v.split(": ")[1])
+        total += num
+    # print total
+
     for k,v in labels.items():
         if total == 0:
             labels[k] = 0
         else:
-            labels[k] = ((int)(v.split(": ")[1]) / total) * 100
+            num = (int)(v.split(": ")[1])
+            labels[k] = (num / total) * 100
+            # print k, " ",labels[k]
 
     return labels
 
@@ -151,16 +217,19 @@ def create_row(df,column_names,cell_type,specimen):
 
     # get time points for cell type
     time_points = get_times(df,cell_type = cell_type)
+    # print "create_row "+ str(time_points)
 
     # get indices of nonzero rows for cell_type
     cell_dat = []
     for time in time_points:
-        cell_dat.append(get_data_indices(cell_dict,cell_type,time))
+        cell_dat.append(get_data(cell_dict,cell_type,time))
 
     # get the dictionary of set values
-    labels = venn.get_labels(cell_dat, fill=['number', 'logic'])
+    cell_inds = []
+    for dat in cell_dat:
+        cell_inds.append(list(dat.index))
 
-    # get the sum of all set values
+    labels = get_labels(cell_inds, fill=['number', 'logic'])
     labels = get_percent_labels(labels)
 
     # create a translator between the set names and column names
@@ -170,6 +239,54 @@ def create_row(df,column_names,cell_type,specimen):
     row_vals = []
     for col in column_names:
         if col in translator.keys():
+            row_vals.append(labels[translator[col]])
+        else:
+            row_vals.append(0)
+    return row_vals
+
+def create_row_combined(df,column_names,cell_types,specimen):
+    cell_dict = OrderedDict()
+    for i in cell_types:
+         cell_dict[i] = cell_type_dict(df,i)
+
+    time_points = []
+    for cell in cell_types:
+        time_points = time_points + get_times(df,cell_type = cell)
+
+    time_points = list(sorted(set(time_points)))
+
+    # get indices of nonzero rows for cell_type
+    cell_dat = [pd.Series()]*len(time_points)
+    for cell in cell_types:
+        time_points_cell = get_times(df,cell_type = cell)
+        for time in time_points_cell:
+            ind = time_points.index(time)
+            cell_dat[ind] = cell_dat[ind].add(get_data(cell_dict,cell,time),fill_value = 0)
+        print len(cell_dat[0].index)
+    exit()
+
+    # get the dictionary of set values
+    cell_inds = []
+    for dat in cell_dat:
+        cell_inds.append(list(dat.index))
+
+    labels = get_percent_labels(labels)
+    labels = get_labels(cell_inds, fill=['number', 'logic'])
+
+    print time_points
+    # create a translator between the set names and column names
+    translator = column_names_to_label_keys(time_points)
+    print translator
+    print column_names
+
+    print labels
+
+    exit()
+    row_vals = []
+    for col in column_names:
+        if col in translator.keys():
+            print col
+            print ""
             row_vals.append(labels[translator[col]])
         else:
             row_vals.append(0)
@@ -207,7 +324,18 @@ def create_dfs_from_dir(folder):
             print fname, "\t", cell
             df = pd.read_csv(fname,delimiter = "\t")
             df_dict[cell].loc[specimen] = create_row(df,column_names,cell,specimen)
-            exit()
+
+
+    cell_comb = ""
+    for cell in cell_types:
+        cell_comb += cell + " "
+
+    df_dict[cell_comb] = pd.DataFrame(columns = column_names)
+
+    for fname, specimen in fname_spec_dict.items():
+        print fname, "\t", cell_comb
+        df = pd.read_csv(fname,delimiter = "\t")
+        df_dict[cell_comb].loc[specimen] = create_row_combined(df,column_names,cell_types,specimen)
 
     return df_dict
 
